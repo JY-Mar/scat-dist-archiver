@@ -1,4 +1,4 @@
-A plugin for rollup or vite to archive the bundle directory which supports `.zip` `.tar` `.tgz` formats.
+A universal plugin for webpack, vite, rollup to archive the bundle directory which supports `.zip` `.tar` `.tgz` formats.
 
 ## Module formats
 
@@ -7,13 +7,16 @@ Plugin that supports multiple module formats — `ESModule` and `CommonJS` — a
 > Added support for `ESModule` and `CommonJS` environments in version 1.0.3.
 > `UMD` is no longer supported in version 1.0.7.
 
-| Module formats   | CommonJS       | ESModule              |
-| ---------------------- | -------------- | --------------------- |
-| Applicable Environment | Node.js        | Browser & Node.js     |
+| Module formats         | CommonJS | ESModule          |
+| ---------------------- | -------- | ----------------- |
+| Applicable Environment | Node.js  | Browser & Node.js |
 
 ## Installaion
 
 ```bash
+# v1.0.0 ~ v1.0.6 (Deprecated)
+npm install rollup-plugin-archiver --dev
+# v1.0.7+
 npm install @scat1995/archiver --dev
 ```
 
@@ -21,31 +24,80 @@ npm install @scat1995/archiver --dev
 
 Modify configuration file of project. it would archive `dist` directory to `dist.tar.gz` by default. For example:
 
-```js
+### Vite
+
+```ts
 // vite.config.ts
 import { defineConfig } from 'vite'
-import archiver, { ArchiverOptions } from '@scat1995/archiver'
+import Archiver, { ArchiverOptions } from '@scat1995/archiver'
 
 /* ...Your code... */
 
 const archOptions: ArchiverOptions = {
   type: 'tgz',
-  // The extname of targetName will not No longer necessary
-  // If the extname not exactly corresponds to the type, extname will up to the type
-  // Example: type = 'tgz', targetName = 'dist.tar.gz' => result = 'dist.tar.gz'
-  // Example: type = 'tgz', targetName = 'dist.zip' => result = 'dist.zip.tar.gz'
-  // Example: type = 'tgz', targetName = 'dist' => result = 'dist.tar.gz'
   targetName: 'dist.tar.gz',
   sourceName: 'dist',
-  // Default package source folder, and only package the internal files if ignoreBase is true
   ignoreBase: false
 }
 export default defineConfig({
   /* ...Your code... */
-  plugins: [archiver(archOptions)]
+  plugins: [Archiver(archOptions)]
   /* ...Your code... */
 })
 ```
+
+### Rollup
+
+```ts
+// rollup.config.ts
+import { defineConfig } from 'rollup'
+import Archiver, { ArchiverOptions } from '@scat1995/archiver'
+
+/* ...Your code... */
+
+const archOptions: ArchiverOptions = {
+  type: 'tgz',
+  targetName: 'dist.tar.gz',
+  sourceName: 'dist',
+  ignoreBase: false
+}
+export default defineConfig({
+  /* ...Your code... */
+  plugins: [Archiver(archOptions)]
+  /* ...Your code... */
+})
+```
+
+### Webpack
+
+```js
+// webpack.config.js
+const WebpackArchiverPlugin = require('@scat1995/archiver')
+
+const archOptions = {
+  type: 'tgz',
+  targetName: 'dist.tar.gz',
+  sourceName: 'dist',
+  ignoreBase: false
+}
+
+module.exports = {
+  plugins: [WebpackArchiverPlugin(archOptions)]
+}
+```
+
+### Options Description
+
+- `type`: Archive format - `'zip' | 'tar' | 'tgz'` (default: `'tgz'`)
+- `targetName`: Output archive file name (default: `'dist.tar.gz'`)
+- `sourceName`: Directory to archive (default: `'dist'`)
+- `ignoreBase`: If `true`, only archive contents inside the folder (default: `false`)
+
+> **Note**: The extname of `targetName` will be automatically adjusted to match the `type`.
+>
+> - Example: `type = 'tgz', targetName = 'dist.tar.gz'` => result: `dist.tar.gz`
+> - Example: `type = 'tgz', targetName = 'dist.zip'` => result: `dist.zip.tar.gz`
+> - Example: `type = 'tgz', targetName = 'dist'` => result: `dist.tar.gz`
 
 ## Advanced Usage
 
@@ -54,7 +106,7 @@ export default defineConfig({
 ```js
 // vite.config.ts
 import { defineConfig } from 'vite'
-import archiver, { ArchiverOptions } from '@scat1995/archiver'
+import Archiver, { ArchiverOptions } from '@scat1995/archiver'
 
 /* ...Your code... */
 
@@ -83,10 +135,16 @@ const archOptions: ArchiverOptions = {
 }
 export default defineConfig({
   /* ...Your code... */
-  plugins: [archiver(archOptions)]
+  plugins: [Archiver(archOptions)]
   /* ...Your code... */
 })
 ```
+
+## Supported Build Tools
+
+- ✅ Vite
+- ✅ Rollup
+- ✅ Webpack
 
 ## Apologize
 

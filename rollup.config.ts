@@ -40,7 +40,7 @@ const config = defineConfig([
       }),
       typescript()
     ],
-    external: ['fs', 'path', 'os', 'process', 'chalk', 'compressing']
+    external: ['fs', 'path', 'os', 'process', 'chalk', 'compressing', 'unplugin']
   },
   // 类型声明打包
   {

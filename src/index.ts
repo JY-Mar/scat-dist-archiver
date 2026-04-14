@@ -3,20 +3,10 @@ import os from 'os'
 import compressing from 'compressing'
 import chalk from 'chalk'
 import fs from 'fs'
-import type { Plugin } from 'rollup'
+import { type UnpluginContextMeta, type UnpluginInstance, type UnpluginOptions, createUnplugin } from 'unplugin'
 import { defaultOption, deleteDir, deleteDirFile, isTypeMatchExt, resolveOption, validItem, type ArchiverOptions, type ArchiverType, type ResolvedArchiveOption } from './utils'
 
-export type { ArchiverOptions } from './utils'
-
-/**
- * return Rollup plugin Object
- * @param        {ArchiverOptions} options
- * @return       {*}
- */
-function archiver(options: ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined = defaultOption): Plugin {
-  /**
-   * rollup plugins
-   */
+function initQueue(options: ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined = defaultOption): ResolvedArchiveOption[] {
   const queue: ResolvedArchiveOption[] = []
 
   if (typeof options === 'object' && options) {
@@ -29,51 +19,99 @@ function archiver(options: ArchiverOptions[] | ArchiverOptions<ArchiverType | Ar
     }
   }
 
-  function buildStart() {
-    queue.forEach((que) => {
-      if (validItem(que?.pkgPath) && validItem(que?.cwdPath) && validItem(que?.type)) {
-        //1. Deletes packaged directory, default `dist`
-        deleteDir(que.pkgPath)
-        //2. Deletes all files with the specified extension from the `cwdPath`.
-        deleteDirFile(que.cwdPath, que.type)
+  return queue
+}
+
+/**
+ * Before build hook
+ * @param queue
+ */
+function startHandler(queue?: ResolvedArchiveOption[]): void {
+  queue.forEach((que) => {
+    if (validItem(que?.pkgPath) && validItem(que?.cwdPath) && validItem(que?.type)) {
+      // 1. Deletes packaged directory, default `dist`
+      deleteDir(que.pkgPath)
+      // 2. Deletes all files with the specified extension from the `cwdPath`.
+      deleteDirFile(que.cwdPath, que.type)
+    }
+  })
+}
+
+/**
+ * End build hook
+ * @param queue
+ */
+function endHandler(queue?: ResolvedArchiveOption[]): void {
+  queue.forEach((que, queIndex) => {
+    if (validItem(que.sourceName) && validItem(que.targetName) && validItem(que.type) && validItem(que.extname) && validItem(que.pkgPath) && validItem(que.cwdPath) && validItem(que.ignoreBase)) {
+      let basename: string
+      if (isTypeMatchExt(que.targetName, que.type)) {
+        basename = que.targetName.substring(0, que.targetName.indexOf(`.${que.extname}`))
+      } else {
+        basename = que.targetName
       }
-    })
-  }
+      const destStream = fs.createWriteStream(path.resolve(que.cwdPath, `${basename}.${que.extname}`))
+      const sourceStream = new compressing[que.type].Stream()
 
-  function closeBundle() {
-    queue.forEach((que, queIndex) => {
-      if (validItem(que.sourceName) && validItem(que.targetName) && validItem(que.type) && validItem(que.extname) && validItem(que.pkgPath) && validItem(que.cwdPath) && validItem(que.ignoreBase)) {
-        let basename: string
-        if (isTypeMatchExt(que.targetName, que.type)) {
-          basename = que.targetName.substring(0, que.targetName.indexOf(`.${que.extname}`))
-        } else {
-          basename = que.targetName
-        }
-        const destStream = fs.createWriteStream(path.resolve(que.cwdPath, `${basename}.${que.extname}`))
-        const sourceStream = new compressing[que.type].Stream()
+      destStream.on('finish', () => {
+        process.stdout.write(os.EOL)
+        console.log(chalk.cyan(`✨[@scat1995/archiver#${queIndex + 1}]: ${que.sourceName} archive completed: `))
+        console.log(chalk.hex('#757575')(path.resolve(que.cwdPath, `${basename}.${que.extname}`)))
+      })
+      destStream.on('error', (err) => {
+        process.stdout.write(os.EOL)
+        console.log(chalk.hex('#e74856')(`‼️[@scat1995/archiver#${queIndex + 1}]: ${que.sourceName} archive failed`))
+        throw err
+      })
 
-        destStream.on('finish', () => {
-          process.stdout.write(os.EOL)
-          console.log(chalk.cyan(`✨[@scat1995/archiver#${queIndex + 1}]: ${que.sourceName} archive completed: `))
-          console.log(chalk.hex('#757575')(path.resolve(que.cwdPath, `${basename}.${que.extname}`)))
-        })
-        destStream.on('error', (err) => {
-          process.stdout.write(os.EOL)
-          console.log(chalk.hex('#e74856')(`‼️[@scat1995/archiver#${queIndex + 1}]: ${que.sourceName} archive failed`))
-          throw err
-        })
+      sourceStream.addEntry(que.pkgPath, { ignoreBase: que.ignoreBase })
+      sourceStream.pipe(destStream)
+    }
+  })
+}
 
-        sourceStream.addEntry(que.pkgPath, { ignoreBase: que.ignoreBase })
-        sourceStream.pipe(destStream)
-      }
-    })
-  }
+const name: string = 'Archiver'
+let framework: UnpluginContextMeta['framework'] | undefined = undefined
+
+type Options = ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined
+
+function unpluginFactory(options: Options, meta: UnpluginContextMeta): UnpluginOptions {
+  const queue: ResolvedArchiveOption[] = initQueue(options)
+  framework = meta.framework
 
   return {
-    name: 'Archiver',
-    buildStart,
-    closeBundle
+    name,
+    rollup: {
+      buildStart() {
+        startHandler(queue)
+      },
+      closeBundle() {
+        endHandler(queue)
+      }
+    },
+    vite: {
+      buildStart() {
+        startHandler(queue)
+      },
+      closeBundle() {
+        endHandler(queue)
+      }
+    },
+    webpack: (compiler) => {
+      compiler.hooks.compilation.tap(name, () => {
+        startHandler(queue)
+      })
+      compiler.hooks.done.tap(name, () => {
+        endHandler(queue)
+      })
+    }
   }
 }
 
-export default archiver
+const Archiver = createUnplugin(unpluginFactory)
+
+export default Archiver
+export const RollupPluginArchiver = Archiver.rollup
+export const VitePluginArchiver = Archiver.vite
+export const WebpackPluginArchiver = Archiver.webpack
+export type { ArchiverOptions, ArchiverType } from './utils'

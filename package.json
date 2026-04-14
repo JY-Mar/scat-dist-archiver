@@ -1,6 +1,6 @@
 {
   "name": "@scat1995/archiver",
-  "version": "1.0.7",
+  "version": "2.0.0",
   "description": "Archive dist folder",
   "type": "module",
   "author": "JY-Mar",
@@ -35,7 +35,14 @@
   ],
   "scripts": {
     "dev": "tsc -w -p .",
-    "build": "rimraf dist && rollup -c rollup.config.ts"
+    "build": "rimraf dist && rollup -c rollup.config.ts",
+    "reinstall": "npm install",
+    "publish": "npm publish --access public"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "compressing": "^1.5.1",
+    "unplugin": "^3.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.1.1",
@@ -46,16 +53,14 @@
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/node": "^24.3.0",
+    "@types/webpack": "^5.28.5",
     "rimraf": "^6.0.1",
     "rollup": "^4.21.1",
     "rollup-plugin-dts": "^6.4.1",
     "tslib": "^2.8.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.2",
-    "vite": "^8.0.8"
-  },
-  "dependencies": {
-    "chalk": "^4.1.2",
-    "compressing": "^1.5.1"
+    "vite": "^8.0.8",
+    "webpack": "^5.95.0"
   }
 }
