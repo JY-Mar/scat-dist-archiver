@@ -111,5 +111,5 @@ const Archiver = createUnplugin(unpluginFactory)
 export default Archiver
 export const RollupPluginArchiver = Archiver.rollup
 export const VitePluginArchiver = Archiver.vite
-export const WebpackArchiverPlugin = Archiver.webpack
+export const ArchiverWebpackPlugin = Archiver.webpack
 export type { ArchiverOptions, ArchiverType } from './utils'

@@ -100,11 +100,11 @@ export default defineConfig({
 ```js
 // webpack.config.js
 // v2.0.0+
-const { WebpackArchiverPlugin } = require('@scat1995/archiver')
+const { ArchiverWebpackPlugin } = require('@scat1995/archiver')
 
 module.exports = {
   plugins: [
-    new WebpackArchiverPlugin({
+    new ArchiverWebpackPlugin({
       type: 'tgz',
       targetName: 'dist.tar.gz',
       sourceName: 'dist',
