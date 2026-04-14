@@ -1,23 +1,20 @@
-A plugin for rollup or vite to compress the bundle directory which supports `.zip` `.tar` `.tgz` formats.
-
-> Forked from: https://github.com/lourain/rollup-plugin-compress-dist
->
-> And referred to: https://gitee.com/codercjx/rollup-plugin-compression
+A plugin for rollup or vite to archive the bundle directory which supports `.zip` `.tar` `.tgz` formats.
 
 ## Module formats
 
-Plugin that supports multiple module formats — `ESModule`, `UMD`, and `CommonJS` — and automatically applies the most appropriate import strategy based on the runtime environment.
+Plugin that supports multiple module formats — `ESModule` and `CommonJS` — and automatically applies the most appropriate import strategy based on the runtime environment.
 
-> Added support for `ESModule`, `UMD`, and `CommonJS` environments in version 1.0.3.
+> Added support for `ESModule` and `CommonJS` environments in version 1.0.3.
+> `UMD` is no longer supported in version 1.0.7.
 
-| Module formats   | CommonJS       | ESModule              | UMD                            |
-| ---------------------- | -------------- | --------------------- | ------------------------------ |
-| Applicable Environment | Node.js        | Browser & Node.js     | Universal (Browser, Node, AMD) |
+| Module formats   | CommonJS       | ESModule              |
+| ---------------------- | -------------- | --------------------- |
+| Applicable Environment | Node.js        | Browser & Node.js     |
 
 ## Installaion
 
 ```bash
-npm install rollup-plugin-compressor --dev
+npm install @scat1995/archiver --dev
 ```
 
 ## Usage
@@ -27,11 +24,11 @@ Modify configuration file of project. it would archive `dist` directory to `dist
 ```js
 // vite.config.ts
 import { defineConfig } from 'vite'
-import compressor, { CompressOptions } from 'rollup-plugin-compressor'
+import archiver, { ArchiverOptions } from '@scat1995/archiver'
 
 /* ...Your code... */
 
-const compressOpts: CompressOptions = {
+const archOptions: ArchiverOptions = {
   type: 'tgz',
   // The extname of targetName will not No longer necessary
   // If the extname not exactly corresponds to the type, extname will up to the type
@@ -45,7 +42,7 @@ const compressOpts: CompressOptions = {
 }
 export default defineConfig({
   /* ...Your code... */
-  plugins: [compressor(compressOptions)]
+  plugins: [archiver(archOptions)]
   /* ...Your code... */
 })
 ```
@@ -57,11 +54,11 @@ export default defineConfig({
 ```js
 // vite.config.ts
 import { defineConfig } from 'vite'
-import compressor, { CompressOptions } from 'rollup-plugin-compressor'
+import archiver, { ArchiverOptions } from '@scat1995/archiver'
 
 /* ...Your code... */
 
-const compressOpts: CompressOptions = {
+const archOptions: ArchiverOptions = {
   sourceName: 'dist',
 
   // ** [e.g.1] The following code will generate compressed files(packaging 'dist' into zip archive and tar.gz archive):
@@ -70,13 +67,13 @@ const compressOpts: CompressOptions = {
   targetName: 'dist/pkg',
   // ** [e.g.1]
 
-  // ** [e.g.2] The following code will generate compressed files(packaging 'dist' into zip archive and tar.gz archive):
+  // ** [e.g.2] The following code will generate archived files(packaging 'dist' into zip archive):
   // result files: [dist/pkg1.zip, dist/pkg2.zip]
   type: 'zip',
   targetName: ['dist/pkg1', 'dist/pkg2'],
   // ** [e.g.2]
 
-  // ** [e.g.3] The following code will generate compressed files(packaging 'dist' into zip archive and tar.gz archive):
+  // ** [e.g.3] The following code will generate archived files(packaging 'dist' into zip archive and tar.gz archive):
   // result files: [dist/pkg1.zip, dist/pkg1.tar.gz, dist/pkg2.zip, dist/pkg2.tar.gz]
   type: ['zip', 'tgz'],
   targetName: ['dist/pkg1', 'dist/pkg2'],
@@ -86,7 +83,7 @@ const compressOpts: CompressOptions = {
 }
 export default defineConfig({
   /* ...Your code... */
-  plugins: [compressor(compressOptions)]
+  plugins: [archiver(archOptions)]
   /* ...Your code... */
 })
 ```

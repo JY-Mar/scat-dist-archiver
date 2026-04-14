@@ -1,72 +1,79 @@
 import path from 'path'
+import os from 'os'
 import compressing from 'compressing'
 import chalk from 'chalk'
 import fs from 'fs'
 import type { Plugin } from 'rollup'
-import { defaultOption, deleteDir, deleteDirFile, isTypeMatchExt, resolveOption, validItem, type CompressOptions, type CompressType, type ResolvedCompressOption } from './utils'
+import { defaultOption, deleteDir, deleteDirFile, isTypeMatchExt, resolveOption, validItem, type ArchiverOptions, type ArchiverType, type ResolvedArchiveOption } from './utils'
 
-export type { CompressOptions } from './utils'
+export type { ArchiverOptions } from './utils'
 
 /**
  * return Rollup plugin Object
- * @param        {CompressOptions} options
+ * @param        {ArchiverOptions} options
  * @return       {*}
  */
-function compressor(options: CompressOptions[] | CompressOptions<CompressType | CompressType[]> | undefined = defaultOption): Plugin {
+function archiver(options: ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined = defaultOption): Plugin {
   /**
    * rollup plugins
    */
-  const queue: ResolvedCompressOption[] = []
+  const queue: ResolvedArchiveOption[] = []
 
   if (typeof options === 'object' && options) {
     if (Object.prototype.toString.call(options) === '[object Object]') {
-      queue.push(...resolveOption(options as CompressOptions))
+      queue.push(...resolveOption(options as ArchiverOptions))
     } else if (options instanceof Array) {
       options.forEach((opt) => {
-        typeof opt === 'object' && Object.prototype.toString.call(opt) === '[object Object]' && queue.push(...resolveOption(opt as CompressOptions))
+        typeof opt === 'object' && Object.prototype.toString.call(opt) === '[object Object]' && queue.push(...resolveOption(opt as ArchiverOptions))
       })
     }
+  }
+
+  function buildStart() {
+    queue.forEach((que) => {
+      if (validItem(que?.pkgPath) && validItem(que?.cwdPath) && validItem(que?.type)) {
+        //1. Deletes packaged directory, default `dist`
+        deleteDir(que.pkgPath)
+        //2. Deletes all files with the specified extension from the `cwdPath`.
+        deleteDirFile(que.cwdPath, que.type)
+      }
+    })
+  }
+
+  function closeBundle() {
+    queue.forEach((que, queIndex) => {
+      if (validItem(que.sourceName) && validItem(que.targetName) && validItem(que.type) && validItem(que.extname) && validItem(que.pkgPath) && validItem(que.cwdPath) && validItem(que.ignoreBase)) {
+        let basename: string
+        if (isTypeMatchExt(que.targetName, que.type)) {
+          basename = que.targetName.substring(0, que.targetName.indexOf(`.${que.extname}`))
+        } else {
+          basename = que.targetName
+        }
+        const destStream = fs.createWriteStream(path.resolve(que.cwdPath, `${basename}.${que.extname}`))
+        const sourceStream = new compressing[que.type].Stream()
+
+        destStream.on('finish', () => {
+          process.stdout.write(os.EOL)
+          console.log(chalk.cyan(`✨[@scat1995/archiver#${queIndex + 1}]: ${que.sourceName} archive completed: `))
+          console.log(chalk.hex('#757575')(path.resolve(que.cwdPath, `${basename}.${que.extname}`)))
+        })
+        destStream.on('error', (err) => {
+          process.stdout.write(os.EOL)
+          console.log(chalk.hex('#e74856')(`‼️[@scat1995/archiver#${queIndex + 1}]: ${que.sourceName} archive failed`))
+          throw err
+        })
+
+        sourceStream.addEntry(que.pkgPath, { ignoreBase: que.ignoreBase })
+        sourceStream.pipe(destStream)
+      }
+    })
   }
 
   return {
-    name: 'Compressor',
-    buildStart() {
-      queue.forEach((que) => {
-        if (validItem(que?.pkgPath) && validItem(que?.cwdPath) && validItem(que?.type)) {
-          //1. Deletes packaged directory, default `dist`
-          deleteDir(que.pkgPath)
-          //2. Deletes all files with the specified extension from the `cwdPath`.
-          deleteDirFile(que.cwdPath, que.type)
-        }
-      })
-    },
-    closeBundle() {
-      queue.forEach((que, queIndex) => {
-        if (validItem(que.sourceName) && validItem(que.targetName) && validItem(que.type) && validItem(que.extname) && validItem(que.pkgPath) && validItem(que.cwdPath) && validItem(que.ignoreBase)) {
-          let basename: string
-          if (isTypeMatchExt(que.targetName, que.type)) {
-            basename = que.targetName.substring(0, que.targetName.indexOf(`.${que.extname}`))
-          } else {
-            basename = que.targetName
-          }
-          const destStream = fs.createWriteStream(path.resolve(que.cwdPath, `${basename}.${que.extname}`))
-          const sourceStream = new compressing[que.type].Stream()
-
-          destStream.on('finish', () => {
-            console.log(chalk.cyan(`✨[rollup-plugin-compressor#${queIndex + 1}]: ${que.sourceName} compress completed: `))
-            console.log(chalk.hex('#757575')(path.resolve(que.cwdPath, `${basename}.${que.extname}`)))
-          })
-          destStream.on('error', (err) => {
-            console.log(chalk.hex('#e74856')(`‼️[rollup-plugin-compressor#${queIndex + 1}]: ${que.sourceName} compress failed`))
-            throw err
-          })
-
-          sourceStream.addEntry(que.pkgPath, { ignoreBase: que.ignoreBase })
-          sourceStream.pipe(destStream)
-        }
-      })
-    }
+    name: 'Archiver',
+    buildStart,
+    closeBundle
   }
 }
 
-export default compressor
+export default archiver

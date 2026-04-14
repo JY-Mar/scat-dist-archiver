@@ -1,17 +1,24 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "moduleResolution": "Node",
-    "strict": false,
-    "declaration": true,
-    "declarationDir": "dist",
-    "noUnusedLocals": true,
-    "esModuleInterop": true,
-    "outDir": "dist/es",
     "module": "ESNext",
     "lib": ["ESNext"],
-    "sourceMap": true
+    
+    "moduleResolution": "Bundler",
+    "strict": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "declaration": false,
+    "noUnusedLocals": true,
+    "esModuleInterop": true,
+    
+    "sourceMap": false,
+
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["node"]
   },
-  "include": ["./src"],
-  "exclude": ["dist", "node_modules"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

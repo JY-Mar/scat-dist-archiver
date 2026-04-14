@@ -1,5 +1,7 @@
 import path from 'path'
-import typescript2 from 'rollup-plugin-typescript2'
+import { defineConfig } from 'rollup'
+import typescript from '@rollup/plugin-typescript'
+import dts from 'rollup-plugin-dts'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import terser from '@rollup/plugin-terser'
@@ -7,27 +9,20 @@ import json from '@rollup/plugin-json'
 import strip from '@rollup/plugin-strip'
 import alias from '@rollup/plugin-alias'
 
-export default [
+const config = defineConfig([
   {
     input: path.join('src', 'index.ts'),
     output: [
-      // ESModule
+      // ESModule → ESM
       {
         file: path.join('dist', 'index.esm.js'),
         format: 'esm',
         sourcemap: false
       },
-      // CommonJS
+      // CommonJS → CJS
       {
         file: path.join('dist', 'index.cjs.js'),
         format: 'cjs',
-        sourcemap: false
-      },
-      // Browser
-      {
-        file: path.join('dist', 'index.umd.js'),
-        format: 'umd',
-        name: 'index.umd', // UMD 需要一个全局变量名
         sourcemap: false
       }
     ],
@@ -43,8 +38,24 @@ export default [
         functions: ['console.!(warn|error)', 'assert.*'],
         sourceMap: true
       }),
-      typescript2()
+      typescript()
     ],
-    external: ['fs', 'path', 'process', 'chalk', 'compressing']
+    external: ['fs', 'path', 'os', 'process', 'chalk', 'compressing']
+  },
+  // 类型声明打包
+  {
+    input: path.join('src', 'index.ts'),
+    output: {
+      file: path.join('dist', 'index.d.ts'),
+      format: 'esm',
+      sourcemap: false
+    },
+    external: ['path'],
+    plugins: [
+      // 声明合并
+      dts()
+    ]
   }
-]
+])
+
+export default config

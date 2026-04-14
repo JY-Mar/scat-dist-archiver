@@ -42,19 +42,19 @@ export enum ExtnameType {
  */
 export const ExtnameTypeList = Object.keys(ExtnameType) as (keyof typeof ExtnameType)[]
 /**
- * Supported compress types
+ * Supported archive types
  */
-export type CompressType = keyof typeof ExtnameType
+export type ArchiverType = keyof typeof ExtnameType
 /**
- * Compress Options
+ * Archive Options
  */
-export interface CompressOptions<T extends CompressType | CompressType[] = CompressType | CompressType[]> {
+export interface ArchiverOptions<T extends ArchiverType | ArchiverType[] = ArchiverType | ArchiverType[]> {
   /**
-   * Directory to compress
+   * Directory to archive
    */
   sourceName?: string
   /**
-   * Compression format
+   * Archive format
    */
   type: T
   /**
@@ -62,16 +62,16 @@ export interface CompressOptions<T extends CompressType | CompressType[] = Compr
    */
   targetName?: TargetName<T> | TargetName<T>[]
   /**
-   * By default, the source folder itself is included in the archive (default `false`). If set to `true`, only the contents inside the folder will be compressed.
+   * By default, the source folder itself is included in the archive (default `false`). If set to `true`, only the contents inside the folder will be archived.
    */
   ignoreBase?: boolean
 }
 type TargetName<T> = T extends 'zip' | 'tar' ? string | `${string}.${T}` : T extends 'tgz' ? string | `${string}.tar.gz` : never
 
 /**
- * Default compress options
+ * Default archive options
  */
-export const defaultOption: Omit<CompressOptions<'tgz'>, 'targetName'> & { targetName?: TargetName<'tgz'> } = {
+export const defaultOption: Omit<ArchiverOptions<'tgz'>, 'targetName'> & { targetName?: TargetName<'tgz'> } = {
   type: 'tgz',
   sourceName: 'dist',
   targetName: 'dist.tar.gz',
@@ -108,10 +108,10 @@ export function deleteDir(targetPath: string): void {
 /**
  * Deletes all files with the specified extension from the `targetPath`.
  * @param        {string} targetPath
- * @param        {CompressType} type
+ * @param        {ArchiverType} type
  * @return       {*}
  */
-export function deleteDirFile(targetPath: string, type: CompressType = defaultOption.type): void {
+export function deleteDirFile(targetPath: string, type: ArchiverType = defaultOption.type): void {
   if (!targetPath) return
   const rootPathFiles = fs.readdirSync(targetPath)
   // console.log("获取==根路径下文件", rootPathFiles);
@@ -133,7 +133,7 @@ export function deleteDirFile(targetPath: string, type: CompressType = defaultOp
 }
 
 /**
- * Checks whether the file extension matches the specified compress type.
+ * Checks whether the file extension matches the specified archive type.
  * @param        {string} targetPath
  * @param        {string} type
  * @return       {*}
@@ -142,7 +142,7 @@ export function isTypeMatchExt(targetPath: string, type: string): boolean {
   return targetPath && type && ExtnameType?.[type] && new RegExp(`\.+\\.${ExtnameType[type]}\$`).test(targetPath)
 }
 
-export interface ResolvedCompressOption<T extends CompressType = CompressType> extends Required<Pick<CompressOptions<T>, 'sourceName' | 'type' | 'ignoreBase'>> {
+export interface ResolvedArchiveOption<T extends ArchiverType = ArchiverType> extends Required<Pick<ArchiverOptions<T>, 'sourceName' | 'type' | 'ignoreBase'>> {
   /**
    * Output archive file path
    */
@@ -162,14 +162,14 @@ export interface ResolvedCompressOption<T extends CompressType = CompressType> e
 }
 
 /**
- * Resolve compress options
- * @param        {CompressOptions} options
+ * Resolve archive options
+ * @param        {ArchiverOptions} options
  * @return       {*}
  */
-export function resolveOption(options: CompressOptions | undefined = defaultOption): ResolvedCompressOption[] {
-  const result: ResolvedCompressOption[] = []
+export function resolveOption(options: ArchiverOptions | undefined = defaultOption): ResolvedArchiveOption[] {
+  const result: ResolvedArchiveOption[] = []
   const sourceName = options?.sourceName ?? defaultOption.sourceName
-  let targetNames: TargetName<CompressType>[] = []
+  let targetNames: TargetName<ArchiverType>[] = []
   if (typeof options?.targetName === 'string' && options.targetName !== '') {
     targetNames = [options.targetName]
   } else if (typeof options?.targetName === 'object' && options.targetName instanceof Array) {
@@ -178,7 +178,7 @@ export function resolveOption(options: CompressOptions | undefined = defaultOpti
   } else {
     targetNames = [defaultOption.targetName]
   }
-  let types: CompressType[] = []
+  let types: ArchiverType[] = []
   if (typeof options?.type === 'string' && ExtnameTypeList.indexOf(options.type) > -1) {
     // single type
     types = [options.type]
