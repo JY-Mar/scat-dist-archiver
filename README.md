@@ -1,4 +1,6 @@
-A universal plugin for webpack, vite, rollup to archive the bundle directory which supports `.zip` `.tar` `.tgz` formats.
+# scat-dist-archiver
+
+> A universal plugin for webpack, vite, rollup to archive the bundle directory which supports `.zip` `.tar` `.tgz` formats.
 
 ## Module formats
 
@@ -8,8 +10,8 @@ Plugin that supports multiple module formats — `ESModule` and `CommonJS` — a
 > `UMD` is no longer supported in version 2.0.0.
 > webpack plugin is supported in version 2.0.0.
 
-| Module formats         | CommonJS | ESModule          |
-| ---------------------- | -------- | ----------------- |
+|     Module formats     | CommonJS |     ESModule      |
+| :--------------------: | :------: | :---------------: |
 | Applicable Environment | Node.js  | Browser & Node.js |
 
 ## Installaion
@@ -121,9 +123,15 @@ module.exports = {
 
 > **Note**: The extname of `targetName` will be automatically adjusted to match the `type`.
 >
-> - Example: `type = 'tgz', targetName = 'dist.tar.gz'` => result: `dist.tar.gz`
-> - Example: `type = 'tgz', targetName = 'dist.zip'` => result: `dist.zip.tar.gz`
-> - Example: `type = 'tgz', targetName = 'dist'` => result: `dist.tar.gz`
+> - Example: `type = 'tgz', targetName = 'dist.tar.gz'`
+>   👇
+>   Archived file: `dist.zip.tar.gz`
+> - Example: `type = 'tgz', targetName = 'dist.zip'`
+>   👇
+>   Archived file: `dist.zip.tar.gz`
+> - Example: `type = 'tgz', targetName = 'dist'`
+>   👇
+>   Archived file: `dist.tar.gz`
 
 ## Advanced Usage
 
@@ -132,11 +140,14 @@ module.exports = {
 ```js
 // vite.config.ts
 import { defineConfig } from 'vite'
-import Archiver from '@scat1995/archiver'
+// v1.0.0 ~ v1.0.6 (Deprecated)
+import Compressor from 'rollup-plugin-compressor'
+// v2.0.0+
+import { VitePluginArchiver } from '@scat1995/archiver'
 
 /* ...Your code... */
 
-const archOptions: ArchiverOptions = {
+const options = {
   sourceName: 'dist',
 
   // ** [e.g.1] The following code will generate compressed files(packaging 'dist' into zip archive and tar.gz archive):
@@ -161,7 +172,12 @@ const archOptions: ArchiverOptions = {
 }
 export default defineConfig({
   /* ...Your code... */
-  plugins: [Archiver(archOptions)]
+  plugins: [
+    // v1.0.0 ~ v1.0.6 (Deprecated)
+    Compressor(options),
+    // v2.0.0+
+    VitePluginArchiver(options)
+  ]
   /* ...Your code... */
 })
 ```
@@ -171,7 +187,3 @@ export default defineConfig({
 - ✅ Vite
 - ✅ Rollup
 - ✅ Webpack
-
-## Apologize
-
-This README was translated with the help of Copilot. We apologize for any potential inaccuracies.
