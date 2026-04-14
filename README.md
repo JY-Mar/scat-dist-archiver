@@ -5,7 +5,8 @@ A universal plugin for webpack, vite, rollup to archive the bundle directory whi
 Plugin that supports multiple module formats — `ESModule` and `CommonJS` — and automatically applies the most appropriate import strategy based on the runtime environment.
 
 > Added support for `ESModule` and `CommonJS` environments in version 1.0.3.
-> `UMD` is no longer supported in version 1.0.7.
+> `UMD` is no longer supported in version 2.0.0.
+> webpack plugin is supported in version 2.0.0.
 
 | Module formats         | CommonJS | ESModule          |
 | ---------------------- | -------- | ----------------- |
@@ -15,8 +16,8 @@ Plugin that supports multiple module formats — `ESModule` and `CommonJS` — a
 
 ```bash
 # v1.0.0 ~ v1.0.6 (Deprecated)
-npm install rollup-plugin-archiver --dev
-# v1.0.7+
+npm install rollup-plugin-compressor --dev
+# v2.0.0+
 npm install @scat1995/archiver --dev
 ```
 
@@ -29,19 +30,31 @@ Modify configuration file of project. it would archive `dist` directory to `dist
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite'
-import Archiver, { ArchiverOptions } from '@scat1995/archiver'
+// v1.0.0 ~ v1.0.6 (Deprecated)
+import Compressor from 'rollup-plugin-compressor'
+// v2.0.0+
+import { VitePluginArchiver } from '@scat1995/archiver'
 
 /* ...Your code... */
 
-const archOptions: ArchiverOptions = {
-  type: 'tgz',
-  targetName: 'dist.tar.gz',
-  sourceName: 'dist',
-  ignoreBase: false
-}
 export default defineConfig({
   /* ...Your code... */
-  plugins: [Archiver(archOptions)]
+  plugins: [
+    // v1.0.0 ~ v1.0.6 (Deprecated)
+    Compressor({
+      type: 'tgz',
+      targetName: 'dist.tar.gz',
+      sourceName: 'dist',
+      ignoreBase: false
+    }),
+    // v2.0.0+
+    VitePluginArchiver({
+      type: 'tgz',
+      targetName: 'dist.tar.gz',
+      sourceName: 'dist',
+      ignoreBase: false
+    })
+  ]
   /* ...Your code... */
 })
 ```
@@ -51,19 +64,31 @@ export default defineConfig({
 ```ts
 // rollup.config.ts
 import { defineConfig } from 'rollup'
-import Archiver, { ArchiverOptions } from '@scat1995/archiver'
+// v1.0.0 ~ v1.0.6 (Deprecated)
+import Compressor from 'rollup-plugin-compressor'
+// v2.0.0+
+import { RollupPluginArchiver } from '@scat1995/archiver'
 
 /* ...Your code... */
 
-const archOptions: ArchiverOptions = {
-  type: 'tgz',
-  targetName: 'dist.tar.gz',
-  sourceName: 'dist',
-  ignoreBase: false
-}
 export default defineConfig({
   /* ...Your code... */
-  plugins: [Archiver(archOptions)]
+  plugins: [
+    // v1.0.0 ~ v1.0.6 (Deprecated)
+    Compressor({
+      type: 'tgz',
+      targetName: 'dist.tar.gz',
+      sourceName: 'dist',
+      ignoreBase: false
+    }),
+    // v2.0.0+
+    RollupPluginArchiver({
+      type: 'tgz',
+      targetName: 'dist.tar.gz',
+      sourceName: 'dist',
+      ignoreBase: false
+    })
+  ]
   /* ...Your code... */
 })
 ```
@@ -72,17 +97,18 @@ export default defineConfig({
 
 ```js
 // webpack.config.js
-const WebpackArchiverPlugin = require('@scat1995/archiver')
-
-const archOptions = {
-  type: 'tgz',
-  targetName: 'dist.tar.gz',
-  sourceName: 'dist',
-  ignoreBase: false
-}
+// v2.0.0+
+const { WebpackArchiverPlugin } = require('@scat1995/archiver')
 
 module.exports = {
-  plugins: [WebpackArchiverPlugin(archOptions)]
+  plugins: [
+    new WebpackArchiverPlugin({
+      type: 'tgz',
+      targetName: 'dist.tar.gz',
+      sourceName: 'dist',
+      ignoreBase: false
+    })
+  ]
 }
 ```
 
@@ -106,7 +132,7 @@ module.exports = {
 ```js
 // vite.config.ts
 import { defineConfig } from 'vite'
-import Archiver, { ArchiverOptions } from '@scat1995/archiver'
+import Archiver from '@scat1995/archiver'
 
 /* ...Your code... */
 
