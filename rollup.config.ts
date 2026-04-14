@@ -15,13 +15,13 @@ const config = defineConfig([
     output: [
       // ESModule → ESM
       {
-        file: path.join('dist', 'index.esm.js'),
+        file: path.join('dist', 'index.js'),
         format: 'esm',
         sourcemap: false
       },
       // CommonJS → CJS
       {
-        file: path.join('dist', 'index.cjs.js'),
+        file: path.join('dist', 'index.cjs'),
         format: 'cjs',
         sourcemap: false
       }

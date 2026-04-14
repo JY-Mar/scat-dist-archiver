@@ -98,7 +98,7 @@ export default defineConfig({
 ### Webpack
 
 ```js
-// webpack.config.js
+// vue.config.js / webpack.config.js
 // v2.0.0+
 const { ArchiverWebpackPlugin } = require('@scat1995/archiver')
 
