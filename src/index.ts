@@ -3,7 +3,7 @@ import os from 'os'
 import compressing from 'compressing'
 import chalk from 'chalk'
 import fs from 'fs'
-import { type UnpluginContextMeta, type UnpluginInstance, type UnpluginOptions, createUnplugin } from 'unplugin'
+import { type UnpluginOptions, createUnplugin } from 'unplugin'
 import { defaultOption, deleteDir, deleteDirFile, isTypeMatchExt, resolveOption, validItem, type ArchiverOptions, type ArchiverType, type ResolvedArchiveOption } from './utils'
 
 function initQueue(options: ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined = defaultOption): ResolvedArchiveOption[] {
@@ -71,13 +71,11 @@ function endHandler(queue?: ResolvedArchiveOption[]): void {
 }
 
 const name: string = 'Archiver'
-let framework: UnpluginContextMeta['framework'] | undefined = undefined
 
 type Options = ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined
 
-function unpluginFactory(options: Options, meta: UnpluginContextMeta): UnpluginOptions {
+function unpluginFactory(options: Options): UnpluginOptions {
   const queue: ResolvedArchiveOption[] = initQueue(options)
-  framework = meta.framework
 
   return {
     name,
