@@ -139,7 +139,7 @@ export function deleteDirFile(targetPath: string, type: ArchiverType = defaultOp
  * @return       {*}
  */
 export function isTypeMatchExt(targetPath: string, type: string): boolean {
-  return targetPath && type && ExtnameType?.[type] && new RegExp(`\.+\\.${ExtnameType[type]}\$`).test(targetPath)
+  return targetPath && type && ExtnameType?.[type] && new RegExp(`.+\\.${ExtnameType[type]}\$`).test(targetPath)
 }
 
 export interface ResolvedArchiveOption<T extends ArchiverType = ArchiverType> extends Required<Pick<ArchiverOptions<T>, 'sourceName' | 'type' | 'ignoreBase'>> {
