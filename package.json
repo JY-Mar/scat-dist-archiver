@@ -37,7 +37,7 @@
     "dev": "tsc -w -p .",
     "build": "rimraf dist && tsup && npm link",
     "reinstall": "npm install",
-    "publish": "npm publish --access public"
+    "publish-npmjs": "npm publish --access public"
   },
   "dependencies": {
     "chalk": "^4.1.2",
