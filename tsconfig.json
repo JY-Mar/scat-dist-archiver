@@ -11,6 +11,7 @@
     "declaration": false,
     "noUnusedLocals": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     
     "sourceMap": false,
 

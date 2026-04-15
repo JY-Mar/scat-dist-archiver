@@ -1,6 +1,6 @@
 {
   "name": "@scat1995/archiver",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Archive dist folder",
   "type": "module",
   "author": "JY-Mar",
@@ -26,16 +26,16 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
+    "types": "./dist/index.d.ts",
     "require": "./dist/index.cjs",
-    "import": "./dist/index.js",
-    "types": "./dist/index.d.ts"
+    "import": "./dist/index.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "tsc -w -p .",
-    "build": "rimraf dist && rollup -c rollup.config.ts",
+    "build": "rimraf dist && tsup && npm link",
     "reinstall": "npm install",
     "publish": "npm publish --access public"
   },
@@ -44,23 +44,30 @@
     "compressing": "^1.5.1",
     "unplugin": "^3.0.0"
   },
+  "peerDependencies": {
+    "rollup": ">=2.0.0",
+    "vite": ">=2.0.0",
+    "webpack": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    },
+    "rollup": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    }
+  },
   "devDependencies": {
-    "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-strip": "^3.0.4",
-    "@rollup/plugin-terser": "^1.0.0",
-    "@rollup/plugin-typescript": "^12.3.0",
     "@types/node": "^24.3.0",
     "@types/webpack": "^5.28.5",
     "rimraf": "^6.0.1",
     "rollup": "^4.21.1",
-    "rollup-plugin-dts": "^6.4.1",
-    "tslib": "^2.8.1",
-    "tsx": "^4.21.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.2",
-    "vite": "^8.0.8",
+    "vite": "^2.9.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0",
     "webpack": "^5.95.0"
   }
 }

@@ -117,6 +117,9 @@ export interface ArchiverOptions<T extends ArchiverType | ArchiverType[] = Archi
    */
   recursive?: boolean
 }
+
+export type ArchiverInputOptions = ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined
+
 type TargetPath<T> = T extends 'zip' | 'tar' ? string | `${string}.${T}` : T extends 'tgz' ? string | `${string}.tar.gz` : never
 
 export interface ResolvedArchiveOption<T extends ArchiverType = ArchiverType> extends Required<Pick<ArchiverOptions<T>, 'sourceDir' | 'type' | 'includeSource' | 'clear' | 'clearAll' | 'recursive'>> {
@@ -233,7 +236,7 @@ export function removeSync(path: any, types: any = ArchiverTypeKeys, recursive: 
       try {
         fs.unlinkSync(path)
       } catch (err) {
-        console.log(chalk.hex('#e74856')(`‼️[@scat1995/archiver]: ${path} unlink failed`))
+        console.info(chalk.hex('#e74856')(`‼️[@scat1995/archiver]: ${path} unlink failed`))
         throw err
       }
     }

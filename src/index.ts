@@ -2,18 +2,10 @@ import os from 'os'
 import compressing from 'compressing'
 import chalk from 'chalk'
 import fs from 'fs'
-import { type UnpluginOptions, type WebpackPluginInstance, createUnplugin } from 'unplugin'
-import {
-  defaultOption,
-  resolveOption,
-  removeSync,
-  validItem,
-  type ArchiverOptions,
-  type ArchiverType,
-  type ResolvedArchiveOption
-} from './utils'
+import { type UnpluginInstance, type UnpluginOptions, type WebpackPluginInstance, createUnplugin } from 'unplugin'
+import { defaultOption, resolveOption, removeSync, validItem, type ArchiverOptions, type ResolvedArchiveOption, type ArchiverInputOptions } from './utils'
 
-function initQueue(options: ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined = defaultOption): ResolvedArchiveOption[] {
+function initQueue(options: ArchiverInputOptions = defaultOption): ResolvedArchiveOption[] {
   const queue: ResolvedArchiveOption[] = []
 
   if (typeof options === 'object' && options) {
@@ -56,12 +48,12 @@ function endHandler(queue?: ResolvedArchiveOption[]): void {
 
       destStream.on('finish', () => {
         process.stdout.write(os.EOL)
-        console.log(chalk.cyan(`✨[@scat1995/archiver#${queIndex + 1}]: ${que.sourceDir} archive completed: `))
-        console.log(chalk.hex('#757575')(que.fullPath))
+        console.info(chalk.cyan(`✨[@scat1995/archiver#${queIndex + 1}]: ${que.sourceDir} archive completed: `))
+        console.info(chalk.hex('#757575')(que.fullPath))
       })
       destStream.on('error', (err) => {
         process.stdout.write(os.EOL)
-        console.log(chalk.hex('#e74856')(`‼️[@scat1995/archiver#${queIndex + 1}]: ${que.sourceDir} archive failed`))
+        console.info(chalk.hex('#e74856')(`‼️[@scat1995/archiver#${queIndex + 1}]: ${que.sourceDir} archive failed`))
         throw err
       })
 
@@ -73,56 +65,33 @@ function endHandler(queue?: ResolvedArchiveOption[]): void {
 
 const name: string = 'Archiver'
 
-type Options = ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined
-
-function unpluginFactory(options: Options): UnpluginOptions {
+function unpluginFactory(options: ArchiverInputOptions): UnpluginOptions {
   const queue: ResolvedArchiveOption[] = initQueue(options)
 
   return {
     name,
-    rollup: {
-      buildStart() {
-        startHandler(queue)
-      },
-      closeBundle() {
-        endHandler(queue)
-      }
+    buildStart() {
+      startHandler(queue)
     },
-    vite: {
-      buildStart() {
-        startHandler(queue)
-      },
-      closeBundle() {
-        endHandler(queue)
+    writeBundle() {
+      // 判断 Vue CLI 的多编译器模式
+      if (process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD) {
+        // !!! 跳过 !!! Modern Mode 第一轮 (Legacy Bundle)：生成兼容旧浏览器的 JS 文件
+        return
       }
-    },
-    webpack: (compiler) => {
-      compiler.hooks.beforeRun.tap(name, () => {
-        startHandler(queue)
-      })
-      compiler.hooks.done.tap(name, () => {
-        // 关键判断：如果是 Vue CLI 的多编译器模式，且当前不是最后一轮构建，则跳过
-        // 或者通过 stats 里的信息判断
-        if (process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD) {
-          // Modern Mode 第一轮 (Legacy Bundle)：生成兼容旧浏览器的 JS 文件
-          // 跳过
-          return
-        }
-        // Modern Mode 第二轮 (Module Bundle)：生成体积更小、更快的现代浏览器代码。
-        endHandler(queue)
-      })
+      endHandler(queue)
     }
   }
 }
 
-const Archiver = createUnplugin(unpluginFactory)
+const Archiver = createUnplugin(unpluginFactory) as Omit<UnpluginInstance<ArchiverInputOptions, boolean>, 'vite'> & { vite: UnpluginInstance<ArchiverInputOptions, boolean>['rollup'] }
 
 export default Archiver
 export const RollupPluginArchiver = Archiver.rollup
 export const VitePluginArchiver = Archiver.vite
 export class ArchiverWebpackPlugin {
   private instance: WebpackPluginInstance
-  constructor(options?: Options) {
+  constructor(options?: ArchiverInputOptions) {
     this.instance = Archiver.webpack(options)
   }
   apply(compiler: any): void {
