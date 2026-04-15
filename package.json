@@ -34,7 +34,6 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsc -w -p .",
     "build": "rimraf dist && tsup && npm link",
     "reinstall": "npm install",
     "publish-npmjs": "npm publish --access public"
