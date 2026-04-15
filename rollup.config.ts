@@ -30,14 +30,14 @@ const config = defineConfig([
       alias({ entries: [{ find: /^node:(.+)$/, replacement: '$1' }] }),
       resolve({ preferBuiltins: true }), // 解析 node_modules 中的依赖
       commonjs(), // 支持 CommonJS 模块
-      terser(),
+      // terser(),
       json(),
       // 清除调试代码
-      strip({
-        debugger: true,
-        functions: ['console.!(warn|error)', 'assert.*'],
-        sourceMap: true
-      }),
+      // strip({
+      //   debugger: true,
+      //   functions: ['console.!(warn|error)', 'assert.*'],
+      //   sourceMap: true
+      // }),
       typescript()
     ],
     external: ['fs', 'path', 'os', 'process', 'chalk', 'compressing', 'unplugin']

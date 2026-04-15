@@ -1,10 +1,17 @@
-import path from 'path'
 import os from 'os'
 import compressing from 'compressing'
 import chalk from 'chalk'
 import fs from 'fs'
-import { type UnpluginOptions, createUnplugin } from 'unplugin'
-import { defaultOption, deleteDir, deleteDirFile, isTypeMatchExt, resolveOption, validItem, type ArchiverOptions, type ArchiverType, type ResolvedArchiveOption } from './utils'
+import { type UnpluginOptions, type WebpackPluginInstance, createUnplugin } from 'unplugin'
+import {
+  defaultOption,
+  resolveOption,
+  removeSync,
+  validItem,
+  type ArchiverOptions,
+  type ArchiverType,
+  type ResolvedArchiveOption
+} from './utils'
 
 function initQueue(options: ArchiverOptions[] | ArchiverOptions<ArchiverType | ArchiverType[]> | undefined = defaultOption): ResolvedArchiveOption[] {
   const queue: ResolvedArchiveOption[] = []
@@ -28,11 +35,11 @@ function initQueue(options: ArchiverOptions[] | ArchiverOptions<ArchiverType | A
  */
 function startHandler(queue?: ResolvedArchiveOption[]): void {
   queue.forEach((que) => {
-    if (validItem(que?.pkgPath) && validItem(que?.cwdPath) && validItem(que?.type)) {
-      // 1. Deletes packaged directory, default `dist`
-      deleteDir(que.pkgPath)
-      // 2. Deletes all files with the specified extension from the `cwdPath`.
-      deleteDirFile(que.cwdPath, que.type)
+    let _clearAll = que?.clearAll === true
+    if (_clearAll) {
+      removeSync(que?.pkgPath, undefined, que?.recursive)
+    } else if (que?.clear === true) {
+      removeSync(que?.fullPath)
     }
   })
 }
@@ -43,28 +50,22 @@ function startHandler(queue?: ResolvedArchiveOption[]): void {
  */
 function endHandler(queue?: ResolvedArchiveOption[]): void {
   queue.forEach((que, queIndex) => {
-    if (validItem(que.sourceName) && validItem(que.targetName) && validItem(que.type) && validItem(que.extname) && validItem(que.pkgPath) && validItem(que.cwdPath) && validItem(que.ignoreBase)) {
-      let basename: string
-      if (isTypeMatchExt(que.targetName, que.type)) {
-        basename = que.targetName.substring(0, que.targetName.indexOf(`.${que.extname}`))
-      } else {
-        basename = que.targetName
-      }
-      const destStream = fs.createWriteStream(path.resolve(que.cwdPath, `${basename}.${que.extname}`))
+    if (validItem(que.sourceDir) && validItem(que.type) && validItem(que.extension) && validItem(que.pkgPath) && validItem(que.fullPath) && validItem(que.includeSource)) {
+      const destStream = fs.createWriteStream(que.fullPath)
       const sourceStream = new compressing[que.type].Stream()
 
       destStream.on('finish', () => {
         process.stdout.write(os.EOL)
-        console.log(chalk.cyan(`✨[@scat1995/archiver#${queIndex + 1}]: ${que.sourceName} archive completed: `))
-        console.log(chalk.hex('#757575')(path.resolve(que.cwdPath, `${basename}.${que.extname}`)))
+        console.log(chalk.cyan(`✨[@scat1995/archiver#${queIndex + 1}]: ${que.sourceDir} archive completed: `))
+        console.log(chalk.hex('#757575')(que.fullPath))
       })
       destStream.on('error', (err) => {
         process.stdout.write(os.EOL)
-        console.log(chalk.hex('#e74856')(`‼️[@scat1995/archiver#${queIndex + 1}]: ${que.sourceName} archive failed`))
+        console.log(chalk.hex('#e74856')(`‼️[@scat1995/archiver#${queIndex + 1}]: ${que.sourceDir} archive failed`))
         throw err
       })
 
-      sourceStream.addEntry(que.pkgPath, { ignoreBase: que.ignoreBase })
+      sourceStream.addEntry(que.pkgPath, { ignoreBase: que.includeSource !== true })
       sourceStream.pipe(destStream)
     }
   })
@@ -96,10 +97,18 @@ function unpluginFactory(options: Options): UnpluginOptions {
       }
     },
     webpack: (compiler) => {
-      compiler.hooks.compilation.tap(name, () => {
+      compiler.hooks.beforeRun.tap(name, () => {
         startHandler(queue)
       })
       compiler.hooks.done.tap(name, () => {
+        // 关键判断：如果是 Vue CLI 的多编译器模式，且当前不是最后一轮构建，则跳过
+        // 或者通过 stats 里的信息判断
+        if (process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD) {
+          // Modern Mode 第一轮 (Legacy Bundle)：生成兼容旧浏览器的 JS 文件
+          // 跳过
+          return
+        }
+        // Modern Mode 第二轮 (Module Bundle)：生成体积更小、更快的现代浏览器代码。
         endHandler(queue)
       })
     }
@@ -111,5 +120,13 @@ const Archiver = createUnplugin(unpluginFactory)
 export default Archiver
 export const RollupPluginArchiver = Archiver.rollup
 export const VitePluginArchiver = Archiver.vite
-export const ArchiverWebpackPlugin = Archiver.webpack
+export class ArchiverWebpackPlugin {
+  private instance: WebpackPluginInstance
+  constructor(options?: Options) {
+    this.instance = Archiver.webpack(options)
+  }
+  apply(compiler: any): void {
+    this.instance.apply(compiler)
+  }
+}
 export type { ArchiverOptions, ArchiverType } from './utils'
