@@ -3,7 +3,8 @@ import compressing from 'compressing'
 import chalk from 'chalk'
 import fs from 'fs'
 import { type UnpluginInstance, type UnpluginOptions, type WebpackPluginInstance, createUnplugin } from 'unplugin'
-import { defaultOption, resolveOption, removeSync, validItem, type ArchiverOptions, type ResolvedArchiveOption, type ArchiverInputOptions } from './utils'
+import { defaultOption, resolveOption, removeSync, validItem } from './utils'
+import type { ArchiverInputOptions, ArchiverOptions, ResolvedArchiveOption } from './type'
 
 function initQueue(options: ArchiverInputOptions = defaultOption): ResolvedArchiveOption[] {
   const queue: ResolvedArchiveOption[] = []
@@ -73,7 +74,7 @@ function unpluginFactory(options: ArchiverInputOptions): UnpluginOptions {
     buildStart() {
       startHandler(queue)
     },
-    writeBundle() {
+    buildEnd() {
       // 判断 Vue CLI 的多编译器模式
       if (process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD) {
         // !!! 跳过 !!! Modern Mode 第一轮 (Legacy Bundle)：生成兼容旧浏览器的 JS 文件
@@ -98,4 +99,4 @@ export class ArchiverWebpackPlugin {
     this.instance.apply(compiler)
   }
 }
-export type { ArchiverOptions, ArchiverType } from './utils'
+export type { ArchiverOptions, ArchiverType } from './type'
