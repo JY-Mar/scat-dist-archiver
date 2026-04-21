@@ -20,7 +20,7 @@ export default defineConfig(() => {
         comments: false
       }
     },
-    external: ['fs', 'path', 'os', 'process']
+    external: ['fs', 'path', 'os', 'process', 'unplugin', 'compressing']
   }
   return [
     {

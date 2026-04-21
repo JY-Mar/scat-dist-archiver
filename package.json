@@ -35,7 +35,8 @@
   },
   "dependencies": {
     "chalk": "^4.1.2",
-    "compressing": "^1.5.1"
+    "compressing": "^1.5.1",
+    "unplugin": "^3.0.0"
   },
   "peerDependencies": {
     "rollup": ">=2.0.0",
@@ -58,7 +59,6 @@
     "rimraf": "^6.0.1",
     "terser": "^5.46.1",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.2",
-    "unplugin": "^3.0.0"
+    "typescript": "^5.9.2"
   }
 }
