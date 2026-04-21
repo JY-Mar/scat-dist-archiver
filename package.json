@@ -11,15 +11,8 @@
     "url": "https://github.com/JY-Mar/scat-dist-archiver.git"
   },
   "keywords": [
-    "vite",
-    "vite-plugin",
-    "rollup",
-    "rollup-plugin",
-    "webpack",
-    "webpack-plugin",
-    "archiver",
-    "compress",
-    "scat",
+    "compressor",
+    "dist-archiver",
     "scientificat1995"
   ],
   "main": "dist/index.cjs",
