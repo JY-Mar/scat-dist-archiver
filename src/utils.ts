@@ -2,16 +2,16 @@ import chalk from 'chalk'
 import fs from 'fs'
 import path from 'path'
 import { cwd } from 'process'
-import { ExtensionType, type ArchiverExt, type ArchiverOptions, type ArchiverType, type ResolvedArchiveOption, type TargetPath } from './type'
+import DistArchiver from './type'
 
 /**
  * Supported file extensions key list
  */
-export const ArchiverTypeKeys = Object.keys(ExtensionType) as ArchiverType[]
+export const ArchiverTypeKeys = Object.keys(DistArchiver.Extensions) as DistArchiver.Type[]
 /**
  * Supported file extensions value list
  */
-export const ArchiverTypeValues = Object.values(ExtensionType) as ArchiverExt[]
+export const ArchiverTypeValues = Object.values(DistArchiver.Extensions) as DistArchiver.Ext[]
 
 /**
  * Check valid
@@ -43,7 +43,7 @@ export function validItem<T = any>(value: T): boolean {
 /**
  * Default archive options
  */
-export const defaultOption: Pick<ArchiverOptions<'tgz'>, 'sourceDir' | 'type' | 'includeSource' | 'clear' | 'clearAll' | 'recursive'> & { targetPath?: TargetPath<'tgz'> } = {
+export const defaultOption: Pick<DistArchiver.Options<'tgz'>, 'sourceDir' | 'type' | 'includeSource' | 'clear' | 'clearAll' | 'recursive'> & { targetPath?: DistArchiver.TargetPath<'tgz'> } = {
   type: 'tgz',
   sourceDir: 'dist',
   targetPath: 'dist.tar.gz',
@@ -56,19 +56,19 @@ export const defaultOption: Pick<ArchiverOptions<'tgz'>, 'sourceDir' | 'type' | 
 /**
  * Remove file or all files with the specified extension from the directory path.
  * @param        {string} path - File path or directory path to remove.
- * @param        {ArchiverType} type - The archive type to remove.
+ * @param        {DistArchiver.Type} type - The archive type to remove.
  * @param        {boolean} recursive Whether to recursively remove files with the specified extension inside the subdirectories.
  * @return       {*}
  */
-export function removeSync(path?: string, type?: ArchiverType, recursive?: boolean): void
+export function removeSync(path?: string, type?: DistArchiver.Type, recursive?: boolean): void
 /**
  * Remove file or all files with the specified extension from the directory path.
  * @param        {string} path - File path or directory path to remove.
- * @param        {ArchiverType[]} types - The archive types to remove.
+ * @param        {DistArchiver.Type[]} types - The archive types to remove.
  * @param        {boolean} recursive Whether to recursively remove files with the specified extension inside the subdirectories.
  * @return       {*}
  */
-export function removeSync(path?: string, types?: ArchiverType[], recursive?: boolean): void
+export function removeSync(path?: string, types?: DistArchiver.Type[], recursive?: boolean): void
 export function removeSync(path: any, types: any = ArchiverTypeKeys, recursive: boolean = false): void {
   if (!path) return
 
@@ -91,8 +91,8 @@ export function removeSync(path: any, types: any = ArchiverTypeKeys, recursive: 
           // Recursively remove
           removeSync(filePath, types, recursive)
         } else if (_stat.isFile()) {
-          const ext = types.find((v: ArchiverType) => {
-            const fullextname = ExtensionType[v]
+          const ext = types.find((v: DistArchiver.Type) => {
+            const fullextname = DistArchiver.Extensions[v]
             return file.endsWith(`.${fullextname}`)
           })
           if (ext) {
@@ -120,17 +120,17 @@ export function removeSync(path: any, types: any = ArchiverTypeKeys, recursive: 
  * @param        {string} type
  * @return       {*}
  */
-export function isTypeMatchExt(targetPath: string, type: string): boolean {
-  return targetPath && type && ExtensionType?.[type] && new RegExp(`.+\\.${ExtensionType[type]}\$`).test(targetPath)
+export function isTypeMatchExt(targetPath: string, type: DistArchiver.Type): boolean {
+  return targetPath && type && DistArchiver.Extensions?.[type] && new RegExp(`.+\\.${DistArchiver.Extensions[type]}\$`).test(targetPath)
 }
 
 /**
  * Resolve archive options
- * @param        {ArchiverOptions} options
+ * @param        {DistArchiver.Options} options
  * @return       {*}
  */
-export function resolveOption(options: ArchiverOptions | undefined = defaultOption): ResolvedArchiveOption[] {
-  const result: ResolvedArchiveOption[] = []
+export function resolveOption(options: DistArchiver.Options | undefined = defaultOption): DistArchiver.ResolvedOptions[] {
+  const result: DistArchiver.ResolvedOptions[] = []
   const sourceDir = options?.sourceDir ?? options?.sourceName ?? defaultOption.sourceDir
   const _targetPath = options?.targetPath ?? options?.targetName
   const clear = options?.clear ?? defaultOption.clear
@@ -144,7 +144,7 @@ export function resolveOption(options: ArchiverOptions | undefined = defaultOpti
     }
   }
 
-  let targetPaths: TargetPath<ArchiverType>[] = []
+  let targetPaths: DistArchiver.TargetPath<DistArchiver.Type>[] = []
   if (typeof _targetPath === 'string' && _targetPath !== '') {
     targetPaths = [_targetPath]
   } else if (typeof _targetPath === 'object' && _targetPath instanceof Array) {
@@ -153,7 +153,7 @@ export function resolveOption(options: ArchiverOptions | undefined = defaultOpti
   } else {
     targetPaths = [defaultOption.targetPath]
   }
-  let types: ArchiverType[] = []
+  let types: DistArchiver.Type[] = []
   if (typeof options?.type === 'string' && ArchiverTypeKeys.indexOf(options.type) > -1) {
     // single type
     types = [options.type]
@@ -170,7 +170,7 @@ export function resolveOption(options: ArchiverOptions | undefined = defaultOpti
   const pkgPath = path.resolve(cwdPath, sourceDir)
   types.forEach((type) => {
     targetPaths.forEach((targetPath) => {
-      const extension = ExtensionType[type]
+      const extension = DistArchiver.Extensions[type]
 
       let basename: string
       if (isTypeMatchExt(targetPath, type)) {
