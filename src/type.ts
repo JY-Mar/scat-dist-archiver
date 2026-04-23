@@ -140,6 +140,14 @@ namespace DistArchiver {
      */
     fullPath: string
   }
+
+  export interface InternalExecute {
+    (): void
+  }
+
+  export interface Exec {
+    (Options: InputOptions): any
+  }
 }
 
 export default DistArchiver

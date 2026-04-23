@@ -92,13 +92,13 @@ function endHandler(queue?: DistArchiver.ResolvedOptions[]): Promise<void> {
   })
 }
 
-function unpluginFactory(options: DistArchiver.InputOptions): UnpluginOptions {
+function unpluginFactory(options: DistArchiver.InputOptions): UnpluginOptions & { execute: DistArchiver.InternalExecute } {
   const queue: DistArchiver.ResolvedOptions[] = initQueue(options)
 
   return {
     name: 'Archiver',
     // @ts-ignore
-    doit() {
+    execute() {
       startHandler(queue).then(() => {
         setTimeout(() => {
           endHandler(queue)
@@ -107,9 +107,6 @@ function unpluginFactory(options: DistArchiver.InputOptions): UnpluginOptions {
     },
     buildStart() {
       startHandler(queue)
-    },
-    closeBundle() {
-
     },
     buildEnd() {
       // 判断 Vue CLI 的多编译器模式
@@ -126,8 +123,11 @@ function unpluginFactory(options: DistArchiver.InputOptions): UnpluginOptions {
 }
 
 const Archiver = {
-  ...(createUnplugin(unpluginFactory) as Omit<UnpluginInstance<DistArchiver.InputOptions, boolean>, 'vite'> & { vite: UnpluginInstance<DistArchiver.InputOptions, boolean>['rollup'] }),
-  exec: (options: DistArchiver.InputOptions) => (unpluginFactory(options) as any).doit()
+  ...createUnplugin(unpluginFactory as any),
+  exec: (options) => unpluginFactory(options).execute()
+} as Pick<UnpluginInstance<DistArchiver.InputOptions, boolean>, 'rollup' | 'webpack'> & {
+  vite: UnpluginInstance<DistArchiver.InputOptions, boolean>['rollup']
+  exec: DistArchiver.Exec
 }
 
 export default Archiver
