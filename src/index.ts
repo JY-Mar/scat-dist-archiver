@@ -6,6 +6,8 @@ import { type UnpluginInstance, type UnpluginOptions, type WebpackPluginInstance
 import { defaultOption, resolveOption, removeSync, validItem } from './utils'
 import DistArchiver from './type'
 
+const name = 'Archiver'
+
 function initQueue(options: DistArchiver.InputOptions = defaultOption): DistArchiver.ResolvedOptions[] {
   const queue: DistArchiver.ResolvedOptions[] = []
 
@@ -96,7 +98,7 @@ function unpluginFactory(options: DistArchiver.InputOptions): UnpluginOptions & 
   const queue: DistArchiver.ResolvedOptions[] = initQueue(options)
 
   return {
-    name: 'Archiver',
+    name,
     // @ts-ignore
     execute() {
       startHandler(queue).then(() => {
