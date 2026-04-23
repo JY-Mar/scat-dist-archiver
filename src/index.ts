@@ -102,11 +102,14 @@ function unpluginFactory(options: DistArchiver.InputOptions): UnpluginOptions {
       startHandler(queue).then(() => {
         setTimeout(() => {
           endHandler(queue)
-        }, 500)
+        }, 737)
       })
     },
     buildStart() {
       startHandler(queue)
+    },
+    closeBundle() {
+
     },
     buildEnd() {
       // 判断 Vue CLI 的多编译器模式
@@ -114,7 +117,10 @@ function unpluginFactory(options: DistArchiver.InputOptions): UnpluginOptions {
         // !!! 跳过 !!! Modern Mode 第一轮 (Legacy Bundle)：生成兼容旧浏览器的 JS 文件
         return
       }
-      endHandler(queue)
+
+      setTimeout(() => {
+        endHandler(queue)
+      }, 737)
     }
   }
 }
