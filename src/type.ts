@@ -20,7 +20,7 @@ namespace DistArchiver {
    */
   export type TargetPath<T> = T extends 'zip' | 'tar' ? string | `${string}.${T}` : T extends 'tgz' ? string | `${string}.tar.gz` : never
   /**
-   * Archive Options
+   * Archiver Options
    */
   export interface Options<T extends Type | Type[] = Type | Type[]> {
     /**
@@ -111,12 +111,12 @@ namespace DistArchiver {
   }
 
   /**
-   * Input Archive Options
+   * Input Archiver Options
    */
   export type InputOptions = Options[] | Options<Type | Type[]> | undefined
 
   /**
-   * Resolved Archive Option
+   * Resolved Archiver Option
    */
   export interface ResolvedOptions<T extends Type = Type> extends Required<Pick<Options<T>, 'sourceDir' | 'type' | 'includeSource' | 'clear' | 'clearAll' | 'recursive'>> {
     /**
@@ -141,12 +141,28 @@ namespace DistArchiver {
     fullPath: string
   }
 
+  /**
+   * Internal Executable Function
+   */
   export interface InternalExecute {
     (): void
   }
 
+  /**
+   * External Executable Function
+   */
   export interface Exec {
     (Options: InputOptions): any
+  }
+
+  /**
+   * Console
+   */
+  export namespace Consoler {
+    /**
+     * Console output type
+     */
+    export type MsgType = 'success' | 'warning' | 'error' | 'link' | 'info' | 'tip' | 'emphasize' | (string & Record<never, never>)
   }
 }
 

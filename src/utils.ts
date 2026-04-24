@@ -1,8 +1,105 @@
-import chalk from 'chalk'
+import os from 'os'
 import fs from 'fs'
 import path from 'path'
+import chalk from 'chalk'
 import { cwd } from 'process'
 import DistArchiver from './type'
+
+const pkgname = '@scat1995/archiver'
+
+/**
+ * 日志的chalk包装
+ * @param        {string} text
+ * @param        {WebDeployer} type
+ * @return       {*}
+ */
+export function colorful(text: string, type: DistArchiver.Consoler.MsgType = 'info'): string {
+  let color = '#00ffff'
+  switch (type) {
+    case 'success':
+      color = '#52c414'
+      break
+    case 'warning':
+      color = '#faad14'
+      break
+    case 'error':
+      color = '#ff4d4f'
+      break
+    case 'link':
+      color = '#1677ff'
+      break
+    case 'info':
+      color = '#00ffff'
+      break
+    case 'tip':
+      color = '#757575'
+      break
+    case 'emphasize':
+      color = '#ff16e0'
+      break
+    default:
+      color = '#00ffff'
+      break
+  }
+  return chalk.hex(color)(text)
+}
+
+/**
+ * 日志包装后的文字
+ * @param        {string} text
+ * @param        {WebDeployer} type
+ * @return       {*}
+ */
+export function colorfulWithTitle(text: string, type: DistArchiver.Consoler.MsgType = 'info'): string {
+  let outputText: string = text
+  let icon = ''
+
+  switch (type) {
+    case 'success':
+      icon = '✅'
+      break
+    case 'warning':
+      icon = '⚠️'
+      break
+    case 'error':
+      icon = '‼️'
+      break
+    case 'link':
+      icon = '🔗'
+      break
+    case 'info':
+      icon = '🧾'
+      break
+    case 'tip':
+      icon = '🍰'
+      break
+    case 'emphasize':
+      icon = '✨'
+      break
+    default:
+      icon = type ? type : ' '
+      break
+  }
+  const pkg = colorful(`[${pkgname} ${icon}]`, 'emphasize')
+  outputText = `${pkg} ${outputText}`
+  return outputText
+}
+
+/**
+ * 打印日志
+ * @param text 内容
+ * @param type 类型
+ */
+export function consoler(text: string, type: DistArchiver.Consoler.MsgType = 'info'): void {
+  let outputText: string = colorfulWithTitle(text, type)
+  if (!outputText.startsWith(os.EOL)) {
+    outputText = os.EOL + outputText
+  }
+  if (outputText.endsWith(os.EOL)) {
+    outputText = outputText.slice(0, -os.EOL.length)
+  }
+  console.info(outputText)
+}
 
 /**
  * Supported file extensions key list
@@ -104,7 +201,7 @@ export function removeSync(path: any, types: any = ArchiverTypeKeys, recursive: 
       try {
         fs.unlinkSync(path)
       } catch (err) {
-        console.info(chalk.hex('#e74856')(`‼️[@scat1995/archiver]: ${path} unlink failed`))
+        consoler(`"${path}" unlink failed`, 'error')
         throw err
       }
     }

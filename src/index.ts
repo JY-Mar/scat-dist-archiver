@@ -1,9 +1,8 @@
 import os from 'os'
 import fs from 'fs'
-import chalk from 'chalk'
 import compressing from 'compressing'
 import { type UnpluginInstance, type UnpluginOptions, type WebpackPluginInstance, createUnplugin } from 'unplugin'
-import { defaultOption, resolveOption, removeSync, validItem } from './utils'
+import { defaultOption, resolveOption, removeSync, validItem, consoler, colorful } from './utils'
 import DistArchiver from './type'
 
 const name = 'Archiver'
@@ -64,20 +63,20 @@ function endHandler(queue?: DistArchiver.ResolvedOptions[]): Promise<void> {
       resolve()
     } else {
       let handlerCount = 0
+      const indexLength = queue.length > 9 ? 2 : 1
       queue.forEach((que, queIndex) => {
         if (handlerCount <= queueCount - 1) {
           if (validItem(que.sourceDir) && validItem(que.type) && validItem(que.extension) && validItem(que.pkgPath) && validItem(que.fullPath) && validItem(que.includeSource)) {
             const destStream = fs.createWriteStream(que.fullPath)
             const sourceStream = new compressing[que.type].Stream()
-
+            const prefix = `#${String(queIndex + 1).padStart(indexLength, ' ')}: `
             destStream.on('finish', () => {
-              process.stdout.write(os.EOL)
-              console.info(chalk.cyan(`✨[@scat1995/archiver#${queIndex + 1}]: ${que.sourceDir} archive completed: `))
-              console.info(chalk.hex('#757575')(que.fullPath))
+              // process.stdout.write(os.EOL)
+              consoler(`${prefix}"${que.sourceDir}" archive completed: ${os.EOL} 👉 ${colorful(que.fullPath, 'tip')}`)
             })
             destStream.on('error', (err) => {
-              process.stdout.write(os.EOL)
-              console.info(chalk.hex('#e74856')(`‼️[@scat1995/archiver#${queIndex + 1}]: ${que.sourceDir} archive failed`))
+              // process.stdout.write(os.EOL)
+              consoler(`${prefix}"${que.sourceDir}" archive failed.`, 'error')
               throw err
             })
 
@@ -101,25 +100,24 @@ function unpluginFactory(options: DistArchiver.InputOptions): UnpluginOptions & 
     name,
     // @ts-ignore
     execute() {
-      startHandler(queue).then(() => {
-        setTimeout(() => {
-          endHandler(queue)
-        }, 737)
+      startHandler(queue).then(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 737))
+        endHandler(queue)
       })
     },
     buildStart() {
       startHandler(queue)
     },
-    buildEnd() {
+    async writeBundle() {
       // 判断 Vue CLI 的多编译器模式
       if (process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD) {
         // !!! 跳过 !!! Modern Mode 第一轮 (Legacy Bundle)：生成兼容旧浏览器的 JS 文件
         return
       }
-
-      setTimeout(() => {
-        endHandler(queue)
-      }, 737)
+      await new Promise((resolve) => setTimeout(resolve, 737))
+      try {
+        await endHandler(queue)
+      } catch (error) {}
     }
   }
 }

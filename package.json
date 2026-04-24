@@ -1,6 +1,6 @@
 {
   "name": "@scat1995/archiver",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Archive dist folder",
   "type": "module",
   "author": "JY-Mar",
@@ -31,7 +31,8 @@
     "link-g": "npm link",
     "unlink-g": "npm unlink @scat1995/archiver -g",
     "reinstall": "npm install",
-    "publish-npmjs": "npm publish --access public"
+    "publish-npmjs": "npm publish --access public",
+    "publish-beta-npmjs": "npm publish --tag beta --access public"
   },
   "dependencies": {
     "chalk": "^4.1.2",
