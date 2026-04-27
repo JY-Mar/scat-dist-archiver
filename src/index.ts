@@ -78,11 +78,11 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
               const prefix = `#${String(queIndex + 1).padStart(indexLength, ' ')}: `
               destStream.on('finish', () => {
                 // process.stdout.write(os.EOL)
-                consoler(`${prefix}"${que.sourceDir}" archive completed: ${os.EOL} 👉 ${colorful(que.fullPath, 'tip')}`)
+                consoler.info(`${prefix}"${que.sourceDir}" archive completed: ${os.EOL} 👉 ${colorful(que.fullPath, 'tip')}`)
               })
               destStream.on('error', (err) => {
                 // process.stdout.write(os.EOL)
-                consoler(`${prefix}"${que.sourceDir}" archive failed.`, 'error')
+                consoler.error(`${prefix}"${que.sourceDir}" archive failed.`)
                 throw err
               })
 
@@ -110,8 +110,12 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
         endHandler(queue)
       })
     },
-    buildStart() {
-      startHandler(queue)
+    async buildStart() {
+      try {
+        await startHandler(queue)
+      } catch (error) {
+        console.log(error)
+      }
     },
     async writeBundle() {
       // 判断 Vue CLI 的多编译器模式
@@ -120,9 +124,18 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
         return
       }
       await new Promise((resolve) => setTimeout(resolve, 737))
+      const timer = Date.now()
       try {
         await endHandler(queue)
-      } catch (error) {}
+        const cost = Date.now() - timer
+        if (cost > 1000) {
+          consoler.info(`Archive Time: ${Math.ceil((cost * 100) / 1000) / 100}s`)
+        } else {
+          consoler.info(`Archive Time: ${cost}ms`)
+        }
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }
@@ -144,4 +157,4 @@ export class ArchiverWebpackPlugin {
     this.instance.apply(compiler)
   }
 }
-export { default as DistArchiver } from './type'
+export type ArchiverInputOptions = DistArchiver.InputOptions

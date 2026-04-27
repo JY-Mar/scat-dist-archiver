@@ -158,9 +158,23 @@ namespace DistArchiver {
    */
   export namespace Consoler {
     /**
+     * All Console output types
+     */
+    export const MSG_TYPES = ['success', 'warning', 'error', 'link', 'info', 'tip', 'emphasize', 'debug'] as const
+    /**
      * Console output type
      */
-    export type MsgType = 'success' | 'warning' | 'error' | 'link' | 'info' | 'tip' | 'emphasize' | (string & Record<never, never>)
+    export type MsgType = typeof MSG_TYPES[number]
+    /**
+     * Console output type
+     */
+    export type MsgInputType = MsgType | string & Record<never, never>
+    /**
+     * Console instance
+     */
+    export type Instance = {
+      [K in MsgType]: (text: string) => void
+    }
   }
 
   /**

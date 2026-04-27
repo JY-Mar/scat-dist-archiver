@@ -13,7 +13,7 @@ const pkgname = '@scat1995/archiver'
  * @param        {WebDeployer} type
  * @return       {*}
  */
-export function colorful(text: string, type: DistArchiver.Consoler.MsgType = 'info'): string {
+export function colorful(text: string, type: DistArchiver.Consoler.MsgInputType = 'info'): string {
   let color = '#00ffff'
   switch (type) {
     case 'success':
@@ -37,6 +37,9 @@ export function colorful(text: string, type: DistArchiver.Consoler.MsgType = 'in
     case 'emphasize':
       color = '#ff16e0'
       break
+    case 'debug':
+      color = '#ff5e00'
+      break
     default:
       color = '#00ffff'
       break
@@ -50,7 +53,7 @@ export function colorful(text: string, type: DistArchiver.Consoler.MsgType = 'in
  * @param        {WebDeployer} type
  * @return       {*}
  */
-export function colorfulWithTitle(text: string, type: DistArchiver.Consoler.MsgType = 'info'): string {
+export function colorfulWithTitle(text: string, type: DistArchiver.Consoler.MsgInputType = 'info'): string {
   let outputText: string = text
   let icon = ''
 
@@ -76,6 +79,9 @@ export function colorfulWithTitle(text: string, type: DistArchiver.Consoler.MsgT
     case 'emphasize':
       icon = '✨'
       break
+    case 'debug':
+      icon = '🔧'
+      break
     default:
       icon = type ? type : ' '
       break
@@ -85,21 +91,24 @@ export function colorfulWithTitle(text: string, type: DistArchiver.Consoler.MsgT
   return outputText
 }
 
+function _consolerOut(text: string, type: DistArchiver.Consoler.MsgType): void {
+  let outputText: string = colorfulWithTitle(text, type)
+    if (!outputText.startsWith(os.EOL)) {
+      outputText = os.EOL + outputText
+    }
+    if (outputText.endsWith(os.EOL)) {
+      outputText = outputText.slice(0, -os.EOL.length)
+    }
+
+    console.info(outputText)
+}
+
 /**
  * 打印日志
  * @param text 内容
  * @param type 类型
  */
-export function consoler(text: string, type: DistArchiver.Consoler.MsgType = 'info'): void {
-  let outputText: string = colorfulWithTitle(text, type)
-  if (!outputText.startsWith(os.EOL)) {
-    outputText = os.EOL + outputText
-  }
-  if (outputText.endsWith(os.EOL)) {
-    outputText = outputText.slice(0, -os.EOL.length)
-  }
-  console.info(outputText)
-}
+export const consoler = Object.fromEntries(DistArchiver.Consoler.MSG_TYPES.map((type) => [type, (text: string) => _consolerOut(text, type)])) as DistArchiver.Consoler.Instance
 
 /**
  * Supported file extensions key list
@@ -201,7 +210,7 @@ export function removeSync(path: any, types: any = ArchiverTypeKeys, recursive: 
       try {
         fs.unlinkSync(path)
       } catch (err) {
-        consoler(`"${path}" unlink failed`, 'error')
+        consoler.error(`"${path}" unlink failed`)
         throw err
       }
     }
