@@ -1,3 +1,5 @@
+import type { UnpluginInstance, UnpluginOptions } from 'unplugin'
+
 namespace DistArchiver {
   /**
    * Supported file extensions enum
@@ -142,18 +144,14 @@ namespace DistArchiver {
   }
 
   /**
-   * Internal Executable Function
+   * Options for create unplugin
    */
-  export interface InternalExecute {
-    (): void
-  }
+  export type OptionsForCreateUnplugin = UnpluginOptions & { execute: () => void }
 
   /**
    * External Executable Function
    */
-  export interface Exec {
-    (Options: InputOptions): any
-  }
+  export type Exec = (Options: InputOptions) => any
 
   /**
    * Console
@@ -163,6 +161,14 @@ namespace DistArchiver {
      * Console output type
      */
     export type MsgType = 'success' | 'warning' | 'error' | 'link' | 'info' | 'tip' | 'emphasize' | (string & Record<never, never>)
+  }
+
+  /**
+   * Instance of DistArchiver
+   */
+  export type Instance = Pick<UnpluginInstance<InputOptions, boolean>, 'rollup' | 'webpack'> & {
+    vite: UnpluginInstance<InputOptions, boolean>['rollup']
+    exec: Exec
   }
 }
 

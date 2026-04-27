@@ -1,6 +1,6 @@
 {
   "name": "@scat1995/archiver",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "Archive dist folder",
   "type": "module",
   "author": "JY-Mar",
@@ -35,8 +35,8 @@
     "publish-beta-npmjs": "npm publish --tag beta --access public"
   },
   "dependencies": {
-    "chalk": "^4.1.2",
-    "compressing": "^1.5.1",
+    "chalk": "^5.6.2",
+    "compressing": "^1.10.5",
     "unplugin": "^3.0.0"
   },
   "peerDependencies": {
