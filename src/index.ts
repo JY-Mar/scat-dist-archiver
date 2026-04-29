@@ -104,11 +104,11 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
   return {
     name,
     // @ts-ignore
-    execute() {
-      startHandler(queue).then(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 737))
-        endHandler(queue)
-      })
+    async execute() {
+      await startHandler(queue)
+      await new Promise((resolve) => setTimeout(resolve, 737))
+      await endHandler(queue)
+      return Promise.resolve()
     },
     async buildStart() {
       try {
@@ -144,11 +144,9 @@ const Instance: DistArchiver.Instance = {
   ...createUnplugin(unpluginFactory as any),
   exec: (options) => unpluginFactory(options).execute()
 }
-
-export default Instance
-export const RollupPluginArchiver = Instance.rollup
-export const VitePluginArchiver = Instance.vite
-export class ArchiverWebpackPlugin {
+const RollupPluginArchiver = Instance.rollup
+const VitePluginArchiver = Instance.vite
+class ArchiverWebpackPlugin {
   private instance: WebpackPluginInstance
   constructor(options?: DistArchiver.InputOptions) {
     this.instance = Instance.webpack(options)
@@ -157,4 +155,6 @@ export class ArchiverWebpackPlugin {
     this.instance.apply(compiler)
   }
 }
-export type ArchiverInputOptions = DistArchiver.InputOptions
+type ArchiverInputOptions = DistArchiver.InputOptions
+
+export { Instance as default, RollupPluginArchiver, VitePluginArchiver, ArchiverWebpackPlugin, ArchiverInputOptions }

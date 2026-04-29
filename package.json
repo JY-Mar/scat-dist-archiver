@@ -1,6 +1,6 @@
 {
   "name": "@scat1995/archiver",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Archive dist folder",
   "type": "module",
   "author": "JY-Mar",
