@@ -4,6 +4,7 @@ import path from 'path'
 import chalk from 'chalk'
 import { cwd } from 'process'
 import DistArchiver from './type'
+import { DEFAULT_OPTIONS } from './options'
 
 const pkgname = '@scat1995/archiver'
 
@@ -17,7 +18,7 @@ export function colorful(text: string, type: DistArchiver.Consoler.MsgInputType 
   let color = '#00ffff'
   switch (type) {
     case 'success':
-      color = '#52c414'
+      color = '#7fff58'
       break
     case 'warning':
       color = '#faad14'
@@ -147,19 +148,6 @@ export function validItem<T = any>(value: T): boolean {
 }
 
 /**
- * Default archive options
- */
-export const defaultOption: Pick<DistArchiver.Options<'tgz'>, 'sourceDir' | 'type' | 'includeSource' | 'clear' | 'clearAll' | 'recursive'> & { targetPath?: DistArchiver.TargetPath<'tgz'> } = {
-  type: 'tgz',
-  sourceDir: 'dist',
-  targetPath: 'dist.tar.gz',
-  includeSource: true,
-  clear: true,
-  clearAll: false,
-  recursive: false
-}
-
-/**
  * Remove file or all files with the specified extension from the directory path.
  * @param        {string} path - File path or directory path to remove.
  * @param        {DistArchiver.Type} type - The archive type to remove.
@@ -235,14 +223,14 @@ export function isTypeMatchExt(targetPath: string, type: DistArchiver.Type): boo
  * @param        {DistArchiver.Options} options
  * @return       {*}
  */
-export function resolveOption(options: DistArchiver.Options | undefined = defaultOption): DistArchiver.ResolvedOptions[] {
+export function resolveOption(options: DistArchiver.Options | undefined = DEFAULT_OPTIONS): DistArchiver.ResolvedOptions[] {
   const result: DistArchiver.ResolvedOptions[] = []
-  const sourceDir = options?.sourceDir ?? options?.sourceName ?? defaultOption.sourceDir
+  const sourceDir = options?.sourceDir ?? options?.sourceName ?? DEFAULT_OPTIONS.sourceDir
   const _targetPath = options?.targetPath ?? options?.targetName
-  const clear = options?.clear ?? defaultOption.clear
-  const clearAll = options?.clearAll ?? defaultOption.clearAll
-  const recursive = options?.recursive ?? defaultOption.recursive
-  let includeSource = options?.includeSource ?? defaultOption.includeSource
+  const clear = options?.clear ?? DEFAULT_OPTIONS.clear
+  const clearAll = options?.clearAll ?? DEFAULT_OPTIONS.clearAll
+  const recursive = options?.recursive ?? DEFAULT_OPTIONS.recursive
+  let includeSource = options?.includeSource ?? DEFAULT_OPTIONS.includeSource
   if (typeof includeSource !== 'boolean') {
     const ignoreBase = options?.ignoreBase
     if (typeof ignoreBase === 'boolean') {
@@ -255,9 +243,9 @@ export function resolveOption(options: DistArchiver.Options | undefined = defaul
     targetPaths = [_targetPath]
   } else if (typeof _targetPath === 'object' && _targetPath instanceof Array) {
     targetPaths = (_targetPath || []).filter((v) => typeof v === 'string' && v !== '')
-    targetPaths.length <= 0 && (targetPaths = [defaultOption.targetPath])
+    targetPaths.length <= 0 && (targetPaths = [DEFAULT_OPTIONS.targetPath])
   } else {
-    targetPaths = [defaultOption.targetPath]
+    targetPaths = [DEFAULT_OPTIONS.targetPath]
   }
   let types: DistArchiver.Type[] = []
   if (typeof options?.type === 'string' && ArchiverTypeKeys.indexOf(options.type) > -1) {
@@ -266,10 +254,10 @@ export function resolveOption(options: DistArchiver.Options | undefined = defaul
   } else if (typeof options?.type === 'object' && options.type instanceof Array) {
     // multiple type
     types = (options?.type || []).filter((v) => typeof v === 'string' && ArchiverTypeKeys.indexOf(v) > -1)
-    types.length <= 0 && (types = [defaultOption.type])
+    types.length <= 0 && (types = [DEFAULT_OPTIONS.type])
   } else {
     // set default type when empty
-    types = [defaultOption.type]
+    types = [DEFAULT_OPTIONS.type]
   }
 
   const cwdPath = cwd()

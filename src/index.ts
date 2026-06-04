@@ -2,8 +2,9 @@ import os from 'os'
 import fs from 'fs'
 import compressing from 'compressing'
 import { type WebpackPluginInstance, createUnplugin } from 'unplugin'
-import { defaultOption, resolveOption, removeSync, validItem, consoler, colorful } from './utils'
+import { resolveOption, removeSync, validItem, consoler, colorful } from './utils'
 import DistArchiver from './type'
+import { DEFAULT_OPTIONS } from './options'
 
 const name = 'Archiver'
 
@@ -13,7 +14,7 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
    * @param options
    * @returns
    */
-  function initQueue(options: DistArchiver.InputOptions = defaultOption): DistArchiver.ResolvedOptions[] {
+  function initQueue(options: DistArchiver.InputOptions = DEFAULT_OPTIONS): DistArchiver.ResolvedOptions[] {
     const queue: DistArchiver.ResolvedOptions[] = []
 
     if (typeof options === 'object' && options) {
