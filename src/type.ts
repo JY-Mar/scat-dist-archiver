@@ -183,7 +183,7 @@ namespace DistArchiver {
      * Console instance
      */
     export type Instance = {
-      [K in MsgType]: (text: string) => void
+      [K in MsgType]: (text: string, eol?: 'start' | 'end' | 'both' | 'none') => void
     }
   }
 

@@ -9,7 +9,7 @@ import { DEFAULT_OPTIONS } from './options'
 const pkgname = '@scat1995/archiver'
 
 /**
- * 日志的chalk包装
+ * 日志的 chalk 包装
  * @param        {string} text
  * @param        {WebDeployer} msgType
  * @return       {*}
@@ -91,19 +91,19 @@ export function colorfulWithTitle(text: string, msgType: DistArchiver.Consoler.M
   }
   const pkg = colorful(`[${pkgname} ${icon}]`, 'emphasize')
   outputText = `${pkg} ${outputText}`
-  return outputText
+  return colorful(outputText, msgType)
 }
 
-function _consolerOut(text: string, msgType: DistArchiver.Consoler.MsgType): void {
+function _consolerOut(text: string, msgType: DistArchiver.Consoler.MsgType, eol: 'start' | 'end' | 'both' | 'none' = 'start'): void {
   let outputText: string = colorfulWithTitle(text, msgType)
-    if (!outputText.startsWith(os.EOL)) {
-      outputText = os.EOL + outputText
-    }
-    if (outputText.endsWith(os.EOL)) {
-      outputText = outputText.slice(0, -os.EOL.length)
-    }
+  if (!outputText.startsWith(os.EOL) && eol === 'start') {
+    outputText = os.EOL + outputText
+  }
+  if (outputText.endsWith(os.EOL) && eol !== 'end' && eol !== 'both') {
+    outputText = outputText.slice(0, -os.EOL.length)
+  }
 
-    console.info(outputText)
+  console.info(outputText)
 }
 
 /**
@@ -111,7 +111,9 @@ function _consolerOut(text: string, msgType: DistArchiver.Consoler.MsgType): voi
  * @param text 内容
  * @param msgType 类型
  */
-export const consoler = Object.fromEntries(DistArchiver.Consoler.MSG_TYPES.map((msgType) => [msgType, (text: string) => _consolerOut(text, msgType)])) as DistArchiver.Consoler.Instance
+export const consoler = Object.fromEntries(
+  DistArchiver.Consoler.MSG_TYPES.map((msgType) => [msgType, (text: string, eol: 'start' | 'end' | 'both' | 'none' = 'start') => _consolerOut(text, msgType, eol)])
+) as DistArchiver.Consoler.Instance
 
 /**
  * Supported file extensions key list

@@ -64,40 +64,45 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
    * @param queue
    */
   async function endHandler(queue?: DistArchiver.ResolvedOptions[], showConsoler: boolean = true): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const queueCount = (queue || []).length || 0
       if (queueCount <= 0) {
         resolve()
-      } else {
-        let handlerCount = 0
-        const indexLength = queue.length > 9 ? 2 : 1
-        queue.forEach((que, queIndex) => {
-          if (handlerCount <= queueCount - 1) {
-            if (validItem(que.sourceDir) && validItem(que.format) && validItem(que.extension) && validItem(que.pkgPath) && validItem(que.fullPath) && validItem(que.includeSource)) {
-              const destStream = fs.createWriteStream(que.fullPath)
-              const sourceStream = new compressing[que.format].Stream()
-              const prefix = `#${String(queIndex + 1).padStart(indexLength, ' ')}: `
-              destStream.on('finish', () => {
-                if (showConsoler) {
-                  // process.stdout.write(os.EOL)
-                  consoler.info(`${prefix}"${que.sourceDir}" archive completed: ${os.EOL} 👉 ${colorful(que.fullPath, 'tip')}`)
-                }
-              })
-              destStream.on('error', (err) => {
-                // process.stdout.write(os.EOL)
-                consoler.error(`${prefix}"${que.sourceDir}" archive failed.`)
-                throw err
-              })
+        return
+      }
 
-              sourceStream.addEntry(que.pkgPath, { ignoreBase: que.includeSource !== true })
-              sourceStream.pipe(destStream)
+      let finishCount = 0
+      let taskCount = 0
+      const indexLength = queue.length > 9 ? 2 : 1
+
+      queue.forEach((que, queIndex) => {
+        if (validItem(que.sourceDir) && validItem(que.format) && validItem(que.extension) && validItem(que.pkgPath) && validItem(que.fullPath) && validItem(que.includeSource)) {
+          taskCount++
+          const writeStream = fs.createWriteStream(que.fullPath)
+          const compressStream = new compressing[que.format].Stream()
+          const prefix = `#${String(queIndex + 1).padStart(indexLength, ' ')}: `
+
+          writeStream.on('finish', () => {
+            if (showConsoler) {
+              consoler.info(`${prefix}"${que.sourceDir}" archive completed: ${os.EOL} 👉 ${colorful(que.fullPath, 'tip')}`)
             }
-            if (handlerCount === queueCount - 1) {
+            finishCount++
+            if (finishCount === taskCount) {
               resolve()
             }
-          }
-          handlerCount++
-        })
+          })
+          writeStream.on('error', (err) => {
+            consoler.error(`${prefix}"${que.sourceDir}" archive failed.`)
+            reject(err)
+          })
+
+          compressStream.addEntry(que.pkgPath, { ignoreBase: que.includeSource !== true })
+          compressStream.pipe(writeStream)
+        }
+      })
+
+      if (taskCount === 0) {
+        resolve()
       }
     })
   }
