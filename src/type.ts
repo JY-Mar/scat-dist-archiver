@@ -146,7 +146,14 @@ namespace DistArchiver {
   /**
    * Options for create unplugin
    */
-  export type OptionsForCreateUnplugin = UnpluginOptions & { execute: () => Promise<void> }
+  export type OptionsForCreateUnplugin = UnpluginOptions & { execute: Execute }
+
+  /**
+   * Internal Execute function
+   * @param        {boolean} showConsoler Whether to display console output
+   * @return       {Promise<void>}
+   */
+  export type Execute = (showConsoler?: boolean) => Promise<void>
 
   /**
    * Console
@@ -155,7 +162,7 @@ namespace DistArchiver {
     /**
      * All Console output types
      */
-    export const MSG_TYPES = ['success', 'warning', 'error', 'link', 'info', 'tip', 'emphasize', 'debug'] as const
+    export const MSG_TYPES = ['success', 'warn', 'warning', 'error', 'link', 'info', 'tip', 'emphasize', 'debug'] as const
     /**
      * Console output type
      */
@@ -179,8 +186,11 @@ namespace DistArchiver {
     vite: UnpluginInstance<InputOptions, boolean>['rollup']
     /**
      * External Executable Function
+     * @param        {InputOptions} options Input Archiver Options
+     * @param        {boolean} showConsoler Whether to display console output
+     * @return       {*}
      */
-    exec: (options: InputOptions) => Promise<void>
+    exec: (options: InputOptions, showConsoler?: boolean) => Promise<void>
   }
 }
 

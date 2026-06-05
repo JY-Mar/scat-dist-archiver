@@ -34,7 +34,7 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
    * Before build hook
    * @param queue
    */
-  async function startHandler(queue?: DistArchiver.ResolvedOptions[]): Promise<void> {
+  async function startHandler(queue?: DistArchiver.ResolvedOptions[], showConsoler: boolean = true): Promise<void> {
     return new Promise((resolve) => {
       const queueCount = (queue || []).length || 0
       if (queueCount <= 0) {
@@ -63,7 +63,7 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
    * End build hook
    * @param queue
    */
-  async function endHandler(queue?: DistArchiver.ResolvedOptions[]): Promise<void> {
+  async function endHandler(queue?: DistArchiver.ResolvedOptions[], showConsoler: boolean = true): Promise<void> {
     return new Promise((resolve) => {
       const queueCount = (queue || []).length || 0
       if (queueCount <= 0) {
@@ -78,8 +78,10 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
               const sourceStream = new compressing[que.type].Stream()
               const prefix = `#${String(queIndex + 1).padStart(indexLength, ' ')}: `
               destStream.on('finish', () => {
-                // process.stdout.write(os.EOL)
-                consoler.info(`${prefix}"${que.sourceDir}" archive completed: ${os.EOL} 👉 ${colorful(que.fullPath, 'tip')}`)
+                if (showConsoler) {
+                  // process.stdout.write(os.EOL)
+                  consoler.info(`${prefix}"${que.sourceDir}" archive completed: ${os.EOL} 👉 ${colorful(que.fullPath, 'tip')}`)
+                }
               })
               destStream.on('error', (err) => {
                 // process.stdout.write(os.EOL)
@@ -104,11 +106,10 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
 
   return {
     name,
-    // @ts-ignore
-    async execute() {
-      await startHandler(queue)
+    async execute(showConsoler: boolean = true) {
+      await startHandler(queue, showConsoler)
       await new Promise((resolve) => setTimeout(resolve, 737))
-      await endHandler(queue)
+      await endHandler(queue, showConsoler)
       return Promise.resolve()
     },
     async buildStart() {
@@ -143,7 +144,7 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
 
 const Instance: DistArchiver.Instance = {
   ...createUnplugin(unpluginFactory as any),
-  exec: (options) => unpluginFactory(options).execute()
+  exec: (options, showConsoler) => unpluginFactory(options).execute(showConsoler)
 }
 const RollupPluginArchiver = Instance.rollup
 const VitePluginArchiver = Instance.vite

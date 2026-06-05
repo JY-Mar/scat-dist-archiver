@@ -20,6 +20,7 @@ export function colorful(text: string, type: DistArchiver.Consoler.MsgInputType 
     case 'success':
       color = '#7fff58'
       break
+    case 'warn':
     case 'warning':
       color = '#faad14'
       break
@@ -62,6 +63,7 @@ export function colorfulWithTitle(text: string, type: DistArchiver.Consoler.MsgI
     case 'success':
       icon = '✅'
       break
+    case 'warn':
     case 'warning':
       icon = '⚠️'
       break
