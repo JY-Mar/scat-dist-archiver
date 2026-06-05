@@ -47,8 +47,16 @@ namespace DistArchiver {
      *
      * Archived file format.
      * @default 'tgz'
+     * @deprecated Use `format` instead.
      */
-    type: T
+    type?: T
+    /**
+     * 归档文件格式。
+     *
+     * Archived file format.
+     * @default 'tgz'
+     */
+    format: T
     /**
      * 输出归档文件路径。
      * ***此配置项优先级低于 `targetPath`。***
@@ -88,9 +96,9 @@ namespace DistArchiver {
      */
     includeSource?: boolean
     /**
-     * 是否在归档前，删除已存在的与 `type` 、 `targetPath` 对应的归档文件。
+     * 是否在归档前，删除已存在的与 `format(type)` 、 `targetPath` 对应的归档文件。
      *
-     * Whether to delete existing archived files that match the specified `type` and `targetPath` before archiving.
+     * Whether to delete existing archived files that match the specified `format(type)` and `targetPath` before archiving.
      * @default true
      */
     clear?: boolean
@@ -120,7 +128,7 @@ namespace DistArchiver {
   /**
    * Resolved Archiver Option
    */
-  export interface ResolvedOptions<T extends Type = Type> extends Required<Pick<Options<T>, 'sourceDir' | 'type' | 'includeSource' | 'clear' | 'clearAll' | 'recursive'>> {
+  export interface ResolvedOptions<T extends Type = Type> extends Required<Pick<Options<T>, 'sourceDir' | 'format' | 'includeSource' | 'clear' | 'clearAll' | 'recursive'>> {
     /**
      * Output archive file path
      */

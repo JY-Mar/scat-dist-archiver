@@ -11,12 +11,12 @@ const pkgname = '@scat1995/archiver'
 /**
  * 日志的chalk包装
  * @param        {string} text
- * @param        {WebDeployer} type
+ * @param        {WebDeployer} msgType
  * @return       {*}
  */
-export function colorful(text: string, type: DistArchiver.Consoler.MsgInputType = 'info'): string {
+export function colorful(text: string, msgType: DistArchiver.Consoler.MsgInputType = 'info'): string {
   let color = '#00ffff'
-  switch (type) {
+  switch (msgType) {
     case 'success':
       color = '#7fff58'
       break
@@ -52,14 +52,14 @@ export function colorful(text: string, type: DistArchiver.Consoler.MsgInputType 
 /**
  * 日志包装后的文字
  * @param        {string} text
- * @param        {WebDeployer} type
+ * @param        {WebDeployer} msgType
  * @return       {*}
  */
-export function colorfulWithTitle(text: string, type: DistArchiver.Consoler.MsgInputType = 'info'): string {
+export function colorfulWithTitle(text: string, msgType: DistArchiver.Consoler.MsgInputType = 'info'): string {
   let outputText: string = text
   let icon = ''
 
-  switch (type) {
+  switch (msgType) {
     case 'success':
       icon = '✅'
       break
@@ -86,7 +86,7 @@ export function colorfulWithTitle(text: string, type: DistArchiver.Consoler.MsgI
       icon = '🔧'
       break
     default:
-      icon = type ? type : ' '
+      icon = msgType ? msgType : ' '
       break
   }
   const pkg = colorful(`[${pkgname} ${icon}]`, 'emphasize')
@@ -94,8 +94,8 @@ export function colorfulWithTitle(text: string, type: DistArchiver.Consoler.MsgI
   return outputText
 }
 
-function _consolerOut(text: string, type: DistArchiver.Consoler.MsgType): void {
-  let outputText: string = colorfulWithTitle(text, type)
+function _consolerOut(text: string, msgType: DistArchiver.Consoler.MsgType): void {
+  let outputText: string = colorfulWithTitle(text, msgType)
     if (!outputText.startsWith(os.EOL)) {
       outputText = os.EOL + outputText
     }
@@ -109,9 +109,9 @@ function _consolerOut(text: string, type: DistArchiver.Consoler.MsgType): void {
 /**
  * 打印日志
  * @param text 内容
- * @param type 类型
+ * @param msgType 类型
  */
-export const consoler = Object.fromEntries(DistArchiver.Consoler.MSG_TYPES.map((type) => [type, (text: string) => _consolerOut(text, type)])) as DistArchiver.Consoler.Instance
+export const consoler = Object.fromEntries(DistArchiver.Consoler.MSG_TYPES.map((msgType) => [msgType, (text: string) => _consolerOut(text, msgType)])) as DistArchiver.Consoler.Instance
 
 /**
  * Supported file extensions key list
@@ -152,20 +152,20 @@ export function validItem<T = any>(value: T): boolean {
 /**
  * Remove file or all files with the specified extension from the directory path.
  * @param        {string} path - File path or directory path to remove.
- * @param        {DistArchiver.Type} type - The archive type to remove.
+ * @param        {DistArchiver.Type} format - The archive format to remove.
  * @param        {boolean} recursive Whether to recursively remove files with the specified extension inside the subdirectories.
  * @return       {*}
  */
-export function removeSync(path?: string, type?: DistArchiver.Type, recursive?: boolean): void
+export function removeSync(path?: string, format?: DistArchiver.Type, recursive?: boolean): void
 /**
  * Remove file or all files with the specified extension from the directory path.
  * @param        {string} path - File path or directory path to remove.
- * @param        {DistArchiver.Type[]} types - The archive types to remove.
+ * @param        {DistArchiver.Type[]} formats - The archive formats to remove.
  * @param        {boolean} recursive Whether to recursively remove files with the specified extension inside the subdirectories.
  * @return       {*}
  */
-export function removeSync(path?: string, types?: DistArchiver.Type[], recursive?: boolean): void
-export function removeSync(path: any, types: any = ArchiverTypeKeys, recursive: boolean = false): void {
+export function removeSync(path?: string, formats?: DistArchiver.Type[], recursive?: boolean): void
+export function removeSync(path: any, formats: any = ArchiverTypeKeys, recursive: boolean = false): void {
   if (!path) return
 
   try {
@@ -173,26 +173,26 @@ export function removeSync(path: any, types: any = ArchiverTypeKeys, recursive: 
     const pathStat = fs.statSync(path)
     if (pathStat.isDirectory()) {
       let _types = []
-      if (typeof types === 'string') {
-        _types.push(types)
-      } else if (typeof types === 'object' && Object.prototype.toString.call(types) === '[object Array]') {
-        _types.push(...types)
+      if (typeof formats === 'string') {
+        _types.push(formats)
+      } else if (typeof formats === 'object' && Object.prototype.toString.call(formats) === '[object Array]') {
+        _types.push(...formats)
       }
-      if (!validItem(types)) return
+      if (!validItem(formats)) return
       const files = fs.readdirSync(path)
       for (const file of files) {
         const filePath = path.join(path, file)
         const _stat = fs.statSync(filePath)
         if (_stat.isDirectory() && recursive) {
           // Recursively remove
-          removeSync(filePath, types, recursive)
+          removeSync(filePath, formats, recursive)
         } else if (_stat.isFile()) {
-          const ext = types.find((v: DistArchiver.Type) => {
+          const ext = formats.find((v: DistArchiver.Type) => {
             const fullextname = DistArchiver.Extensions[v]
             return file.endsWith(`.${fullextname}`)
           })
           if (ext) {
-            removeSync(filePath, types, recursive)
+            removeSync(filePath, formats, recursive)
           }
         }
       }
@@ -211,13 +211,13 @@ export function removeSync(path: any, types: any = ArchiverTypeKeys, recursive: 
 }
 
 /**
- * Checks whether the file extension matches the specified archive type.
+ * Checks whether the file extension matches the specified archive format.
  * @param        {string} targetPath
- * @param        {string} type
+ * @param        {string} format
  * @return       {*}
  */
-export function isTypeMatchExt(targetPath: string, type: DistArchiver.Type): boolean {
-  return targetPath && type && DistArchiver.Extensions?.[type] && new RegExp(`.+\\.${DistArchiver.Extensions[type]}\$`).test(targetPath)
+export function isTypeMatchExt(targetPath: string, format: DistArchiver.Type): boolean {
+  return targetPath && format && DistArchiver.Extensions?.[format] && new RegExp(`.+\\.${DistArchiver.Extensions[format]}\$`).test(targetPath)
 }
 
 /**
@@ -229,6 +229,7 @@ export function resolveOption(options: DistArchiver.Options | undefined = DEFAUL
   const result: DistArchiver.ResolvedOptions[] = []
   const sourceDir = options?.sourceDir ?? options?.sourceName ?? DEFAULT_OPTIONS.sourceDir
   const _targetPath = options?.targetPath ?? options?.targetName
+  const _format = options?.format ?? options?.type ?? DEFAULT_OPTIONS.format
   const clear = options?.clear ?? DEFAULT_OPTIONS.clear
   const clearAll = options?.clearAll ?? DEFAULT_OPTIONS.clearAll
   const recursive = options?.recursive ?? DEFAULT_OPTIONS.recursive
@@ -249,27 +250,27 @@ export function resolveOption(options: DistArchiver.Options | undefined = DEFAUL
   } else {
     targetPaths = [DEFAULT_OPTIONS.targetPath]
   }
-  let types: DistArchiver.Type[] = []
-  if (typeof options?.type === 'string' && ArchiverTypeKeys.indexOf(options.type) > -1) {
-    // single type
-    types = [options.type]
-  } else if (typeof options?.type === 'object' && options.type instanceof Array) {
-    // multiple type
-    types = (options?.type || []).filter((v) => typeof v === 'string' && ArchiverTypeKeys.indexOf(v) > -1)
-    types.length <= 0 && (types = [DEFAULT_OPTIONS.type])
+  let formats: DistArchiver.Type[] = []
+  if (typeof _format === 'string' && ArchiverTypeKeys.indexOf(_format) > -1) {
+    // single format
+    formats = [_format]
+  } else if (typeof _format === 'object' && _format instanceof Array) {
+    // multiple format
+    formats = (_format || []).filter((v) => typeof v === 'string' && ArchiverTypeKeys.indexOf(v) > -1)
+    formats.length <= 0 && (formats = [DEFAULT_OPTIONS.format])
   } else {
-    // set default type when empty
-    types = [DEFAULT_OPTIONS.type]
+    // set default format when empty
+    formats = [DEFAULT_OPTIONS.format]
   }
 
   const cwdPath = cwd()
   const pkgPath = path.resolve(cwdPath, sourceDir)
-  types.forEach((type) => {
+  formats.forEach((format) => {
     targetPaths.forEach((targetPath) => {
-      const extension = DistArchiver.Extensions[type]
+      const extension = DistArchiver.Extensions[format]
 
       let basename: string
-      if (isTypeMatchExt(targetPath, type)) {
+      if (isTypeMatchExt(targetPath, format)) {
         basename = targetPath.substring(0, targetPath.indexOf(`.${extension}`))
       } else {
         basename = targetPath
@@ -280,7 +281,7 @@ export function resolveOption(options: DistArchiver.Options | undefined = DEFAUL
       const resolvedOption = {
         sourceDir,
         targetPath,
-        type,
+        format,
         includeSource,
         extension,
         cwdPath,

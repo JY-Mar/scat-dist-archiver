@@ -1,7 +1,7 @@
 {
   "name": "@scat1995/archiver",
-  "version": "2.1.0",
-  "description": "Archive dist folder",
+  "version": "2.1.1",
+  "description": "dist folder Archiver",
   "type": "module",
   "author": "JY-Mar",
   "license": "ISC",
@@ -14,7 +14,7 @@
     "url": "https://github.com/JY-Mar/scat-dist-archiver/issues"
   },
   "keywords": [
-    "compressor",
+    "archiver",
     "dist-archiver",
     "scientificat1995"
   ],
@@ -22,7 +22,10 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    "types": "./dist/index.d.ts",
+    "types": {
+      "import": "./dist/index.d.ts",
+      "require": "./dist/index.d.cts"
+    },
     "require": "./dist/index.cjs",
     "import": "./dist/index.js"
   },
@@ -30,7 +33,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rimraf dist && tsup",
+    "build": "rimraf dist && tsup && node scripts/rewritecjs.cjs",
     "link-g": "npm link",
     "unlink-g": "npm unlink @scat1995/archiver -g",
     "reinstall": "npm install",

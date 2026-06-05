@@ -126,8 +126,33 @@ module.exports = {
 
 Supports external archiving operations.
 
+##### ESModule
+
 ```ts
 import Archiver from '@scat1995/archiver'
+
+Archiver.exec({ ... })
+```
+
+##### CommonJS
+
+###### For 2.0.3+
+
+```ts
+const Archiver = require('@scat1995/archiver')
+
+Archiver.default.exec({ ... })
+// Otherwise you have to call it recursively, or an error will occur. 
+// This is a mistake, caused by the developer's negligence.
+Archiver.default.default.exec({ ... })
+```
+
+###### For 2.1.1+
+
+> Exports has been optimized. `.default` is no longer needed.
+
+```ts
+const Archiver = require('@scat1995/archiver')
 
 Archiver.exec({ ... })
 ```
@@ -136,13 +161,14 @@ Archiver.exec({ ... })
 
 |     Option      |     Default     |                                                                   Description                                                                   |           Optional            |   version   |
 | :-------------: | :-------------: | :---------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------: | :---------: |
-|     `type`      |     `'tgz'`     |                                                                 Archive format                                                                  | `'zip'` \| `'tar'` \| `'tgz'` |   2.0.0+    |
+|    `format`     |     `'tgz'`     |                                                                 Archive format                                                                  | `'zip'` \| `'tar'` \| `'tgz'` |   2.1.1+    |
+|     `type`      |     `'tgz'`     |                                                 `2.1.1+ deprecated`<br/><br/>Alias for `format`                                                 | `'zip'` \| `'tar'` \| `'tgz'` |   2.0.0+    |
 |  `targetPath`   | `'dist.tar.gz'` |                                                            Output archive file name                                                             |                               |   2.0.0+    |
-|  `targetName`   | `'dist.tar.gz'` |                                                             Alias for `targetPath`                                                              |                               | 1.0.0~1.0.6 |
+|  `targetName`   | `'dist.tar.gz'` |                                               `2.0.0+ deprecated`<br/><br/>Alias for `targetPath`                                               |                               | 1.0.0~1.0.6 |
 |   `sourceDir`   |    `'dist'`     |                                                              Directory to archive                                                               |                               |   2.0.0+    |
-|  `sourceName`   |    `'dist'`     |                                                              Alias for `sourceDir`                                                              |                               | 1.0.0~1.0.6 |
+|  `sourceName`   |    `'dist'`     |                                               `2.0.0+ deprecated`<br/><br/>Alias for `sourceDir`                                                |                               | 1.0.0~1.0.6 |
 | `includeSource` |     `true`      |                                               If `false`, only archive contents inside the folder                                               |       `true` \| `false`       |   2.0.0+    |
-|  `ignoreBase`   |     `false`     |                                               If `true`, only archive contents inside the folder                                                |       `true` \| `false`       | 1.0.0~1.0.6 |
+|  `ignoreBase`   |     `false`     |                                 `2.0.0+ deprecated`<br/><br/>If `true`, only archive contents inside the folder                                 |       `true` \| `false`       | 1.0.0~1.0.6 |
 |     `clear`     |     `true`      |                                          If `true`, clear the existing archived file before archiving                                           |       `true` \| `false`       |   2.0.0+    |
 |   `clearAll`    |     `false`     |                        If `true`, clear all the existing archived file (`'zip'` \| `'tar'` \| `'tgz'`) before archiving                         |       `true` \| `false`       |   2.0.0+    |
 |   `recursive`   |     `false`     | If `true`, recursively clear all the existing archived file (`'zip'` \| `'tar'` \| `'tgz'`) before archiving from subdirectories of `sourceDir` |       `true` \| `false`       |   2.0.0+    |

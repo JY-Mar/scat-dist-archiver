@@ -73,9 +73,9 @@ function unpluginFactory(options: DistArchiver.InputOptions): DistArchiver.Optio
         const indexLength = queue.length > 9 ? 2 : 1
         queue.forEach((que, queIndex) => {
           if (handlerCount <= queueCount - 1) {
-            if (validItem(que.sourceDir) && validItem(que.type) && validItem(que.extension) && validItem(que.pkgPath) && validItem(que.fullPath) && validItem(que.includeSource)) {
+            if (validItem(que.sourceDir) && validItem(que.format) && validItem(que.extension) && validItem(que.pkgPath) && validItem(que.fullPath) && validItem(que.includeSource)) {
               const destStream = fs.createWriteStream(que.fullPath)
-              const sourceStream = new compressing[que.type].Stream()
+              const sourceStream = new compressing[que.format].Stream()
               const prefix = `#${String(queIndex + 1).padStart(indexLength, ' ')}: `
               destStream.on('finish', () => {
                 if (showConsoler) {

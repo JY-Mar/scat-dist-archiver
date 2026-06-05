@@ -35,7 +35,15 @@ export default defineConfig(() => {
     {
       ...shared,
       format: ['cjs'],
-      dts: false
+      dts: {
+        bundle: false,
+        entry,
+        out: 'index.d.cts'
+      },
+      footer: {
+        js: 'try{var d=module.exports.default;if(d){Object.keys(d).forEach(function(k){if(!(k in module.exports))module.exports[k]=d[k]});module.exports=Object.assign(d,module.exports)}}catch(e){}'
+      },
+      onSuccess: 'echo "CJS build done"'
     }
   ]
 })
